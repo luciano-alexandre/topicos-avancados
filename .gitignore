@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+.angular/
+.idea/
+.vscode/
+.DS_Store
+*.log
+ollama-data/
+postgres-data/
