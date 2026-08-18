@@ -13,17 +13,6 @@ janela de contexto, inferência, parâmetros e qualidade das respostas.
 - Identificar alucinações e outras limitações.
 - Planejar um experimento simples e reproduzível com um modelo.
 
-## Roteiro dos 90 minutos
-
-| Etapa | Tempo | Estratégia |
-|---|---:|---|
-| ativação | 10 min | previsão coletiva: como um modelo produz uma resposta? |
-| exposição visual | 25 min | treinamento, inferência, tokens e contexto |
-| demonstração | 15 min | tokenização e geração passo a passo |
-| exposição dialogada | 15 min | parâmetros, variabilidade e limitações |
-| experimento em grupos | 20 min | repetição, temperatura e contexto |
-| síntese | 5 min | registro de uma conclusão e uma dúvida |
-
 ## Visão geral
 
 Modelos de linguagem de grande escala, ou LLMs, processam sequências e estimam
