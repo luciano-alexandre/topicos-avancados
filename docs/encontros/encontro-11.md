@@ -1,26 +1,26 @@
-# Encontro 11 — Contexto, histórico, sessão e limites
+# Encontro 11 — Timeout, retry, fallback e cache
 
 ## Organização
 
 - Unidade pedagógica: 1;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Contexto, histórico, sessão e limites.
+- tema curricular: Timeout, retry, fallback e cache.
 
 ## Objetivos
 
-- Projetar memória conversacional limitada.
-- Controlar tamanho, relevância e retenção do contexto.
+- Tratar falhas transitórias sem duplicar operações.
+- Aplicar timeout, retry, fallback e cache com critérios.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. modelagem de sessão e estratégia de truncamento — 30 min;
+3. testes de indisponibilidade e latência — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Política de contexto documentada.
+Integração resiliente.
 
 ## Preparação e continuidade
 

@@ -1,4 +1,4 @@
-# Encontro 39 — Apresentações dos projetos — parte 1
+# Encontro 39 — Apresentações dos projetos — parte 2
 
 ## Organização
 
@@ -9,17 +9,17 @@
 ## Objetivos
 
 - Apresentar problema, arquitetura, funcionamento e resultados.
-- Demonstrar domínio das decisões e limitações da solução.
+- Consolidar aprendizados e realizar a retrospectiva da disciplina.
 
 ## Desenvolvimento sugerido
 
 1. abertura e organização das apresentações — 5 min;
-2. apresentações e demonstrações dos projetos — 75 min;
-3. feedback e fechamento — 10 min.
+2. apresentações e demonstrações dos projetos — 65 min;
+3. feedback, retrospectiva e encerramento — 20 min.
 
 ## Evidência de aprendizagem
 
-Apresentação e versão final dos projetos programados para esta etapa.
+Apresentação e entrega final dos projetos.
 
 ## Preparação e continuidade
 

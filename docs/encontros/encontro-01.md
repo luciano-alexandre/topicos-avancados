@@ -371,7 +371,7 @@ Abaixo do diagrama, escreva um texto curto contendo:
 
 ### Preparação da apresentação
 
-Os diagramas serão apresentados nos encontros 02 e 03. A apresentação deve
+Todos os diagramas serão apresentados no Encontro 02. A apresentação deve
 explicar o cenário e percorrer as setas na ordem do fluxo, sem apenas listar os
 componentes. Cada dupla deve justificar:
 
@@ -397,6 +397,6 @@ arquiteturais, decisões reutilizáveis e problemas ainda não resolvidos.
 
 Integrar IA não é apenas enviar texto a um modelo. É projetar um fluxo completo
 no qual dados, instruções, permissões, validações, falhas e responsabilidades
-estejam explícitos. Nos encontros 02 e 03, os diagramas serão apresentados e
-comparados. A partir do encontro 04, serão estudados os mecanismos que explicam
+estejam explícitos. No Encontro 02, os diagramas serão apresentados e
+comparados. A partir do Encontro 03, serão estudados os mecanismos que explicam
 as capacidades e limitações dos modelos.

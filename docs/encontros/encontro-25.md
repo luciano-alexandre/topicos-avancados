@@ -1,26 +1,26 @@
-# Encontro 25 — Extração, normalização, chunking e metadados
+# Encontro 25 — Recuperação, prompt dinâmico e indicação de fontes
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Extração, normalização, chunking e metadados.
+- tema curricular: Recuperação, prompt dinâmico e indicação de fontes.
 
 ## Objetivos
 
-- Comparar estratégias de extração e divisão.
-- Preservar origem e metadados dos segmentos.
+- Selecionar contexto dentro do orçamento.
+- Gerar respostas fundamentadas com fontes.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. experimentos com tamanho e sobreposição — 30 min;
+3. implementação ponta a ponta da consulta — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Corpus rastreável.
+RAG básico com fontes.
 
 ## Preparação e continuidade
 

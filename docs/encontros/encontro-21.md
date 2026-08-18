@@ -1,26 +1,26 @@
-# Encontro 21 — Embeddings e similaridade de cosseno
+# Encontro 21 — pgvector, busca vetorial, filtros e busca híbrida
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Embeddings e similaridade de cosseno.
+- tema curricular: pgvector, busca vetorial, filtros e busca híbrida.
 
 ## Objetivos
 
-- Explicar representação vetorial e dimensionalidade.
-- Gerar embeddings e interpretar similaridade.
+- Armazenar vetores e metadados no PostgreSQL.
+- Executar Top-K e combinar filtros, busca lexical e semântica.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. comparação semântica de textos — 30 min;
+3. configuração do pgvector e consultas comparativas — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Relatório de vizinhança semântica.
+API de busca vetorial e híbrida.
 
 ## Preparação e continuidade
 

@@ -1,26 +1,26 @@
-# Encontro 35 — Segurança em aplicações baseadas em IA
+# Encontro 35 — Privacidade, ética e uso responsável
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Segurança em aplicações baseadas em IA.
+- tema curricular: Privacidade, ética e uso responsável.
 
 ## Objetivos
 
-- Reconhecer injection, jailbreak e vazamento.
-- Aplicar validação, isolamento e menor privilégio.
+- Analisar dados pessoais, viés, transparência e direitos.
+- Definir supervisão e limites da automação.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. threat modeling e testes adversariais — 30 min;
+3. discussão de casos e revisão do projeto — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Ameaças e controles priorizados.
+Checklist de uso responsável.
 
 ## Preparação e continuidade
 

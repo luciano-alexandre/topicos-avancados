@@ -7,9 +7,10 @@ Encontros 1 a 20 (40 aulas; 30 horas-aula).
 ## Temas curriculares
 
 Unidades temáticas 1 a 6: fundamentos de IA generativa, modelos abertos,
-integração Web, prompts, saída estruturada e tool calling. Os encontros 2 e 3
-são dedicados à apresentação dos diagramas; os encontros 9 e 16 são checkpoints
-práticos; e os encontros 19 e 20, seminários.
+integração Web, prompts, saída estruturada e tool calling. O encontro 2 é
+dedicado à apresentação de todos os diagramas; os encontros 8 e 15 são
+checkpoints práticos; e os encontros 18 e 19, seminários. O encontro 20 inicia
+a Unidade 2 com embeddings, criando uma transição antecipada entre as unidades.
 
 ## Produtos esperados
 

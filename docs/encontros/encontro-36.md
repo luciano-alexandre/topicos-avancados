@@ -1,29 +1,29 @@
-# Encontro 36 — Privacidade, ética e uso responsável
+# Encontro 36 — Acompanhamento do projeto: integração e revisão arquitetural
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Privacidade, ética e uso responsável.
+- tema curricular: acompanhamento do projeto final.
 
 ## Objetivos
 
-- Analisar dados pessoais, viés, transparência e direitos.
-- Definir supervisão e limites da automação.
+- Acompanhar a integração dos componentes principais.
+- Revisar arquitetura, escopo e fronteiras entre IA e regras determinísticas.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
-2. fundamentação e demonstração — 40 min;
-3. discussão de casos e revisão do projeto — 30 min;
-4. síntese e registro — 10 min.
+2. apresentação do estado de cada projeto — 20 min;
+3. desenvolvimento orientado e revisão arquitetural — 50 min;
+4. síntese e registro da evidência — 10 min.
 
-## Resultado esperado
+## Evidência de aprendizagem
 
-Checklist de uso responsável.
+Plano de ajustes e versão integrada do projeto.
 
 ## Preparação e continuidade
 
 Consultar as referências oficiais relacionadas ao tema, registrar versões de
-modelos e ferramentas e integrar o resultado ao projeto quando aplicável.
-
+modelos e ferramentas utilizadas e integrar a evidência ao portfólio ou ao
+projeto quando aplicável.

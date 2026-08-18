@@ -1,26 +1,26 @@
-# Encontro 07 — Ollama, API local e Docker
+# Encontro 07 — NestJS consumindo inferência local
 
 ## Organização
 
 - Unidade pedagógica: 1;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Ollama, API local e Docker.
+- tema curricular: NestJS consumindo inferência local.
 
 ## Objetivos
 
-- Instalar e gerenciar modelos locais.
-- Consumir a API de inferência e compreender o ambiente containerizado.
+- Separar cliente de modelo e regra de negócio.
+- Implementar um endpoint inicial de geração.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. demonstração, execução local e chamadas HTTP — 30 min;
+3. implementação guiada de provider e controller — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Ambiente local reproduzível.
+Endpoint NestJS integrado.
 
 ## Preparação e continuidade
 

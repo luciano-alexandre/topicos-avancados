@@ -1,26 +1,26 @@
-# Encontro 26 — Recuperação, prompt dinâmico e indicação de fontes
+# Encontro 26 — Avaliação de RAG: relevância, groundedness e cobertura
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Recuperação, prompt dinâmico e indicação de fontes.
+- tema curricular: Avaliação de RAG: relevância, groundedness e cobertura.
 
 ## Objetivos
 
-- Selecionar contexto dentro do orçamento.
-- Gerar respostas fundamentadas com fontes.
+- Avaliar recuperação e geração separadamente.
+- Combinar casos, rubrica humana e métricas.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. implementação ponta a ponta da consulta — 30 min;
+3. construção de dataset e avaliação inicial — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-RAG básico com fontes.
+Baseline de qualidade do RAG.
 
 ## Preparação e continuidade
 

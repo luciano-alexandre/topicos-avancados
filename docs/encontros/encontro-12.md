@@ -1,26 +1,26 @@
-# Encontro 12 — Timeout, retry, fallback e cache
+# Encontro 12 — Engenharia de prompts: estrutura, estratégias e templates
 
 ## Organização
 
 - Unidade pedagógica: 1;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Timeout, retry, fallback e cache.
+- tema curricular: Engenharia de prompts: estrutura, estratégias e templates.
 
 ## Objetivos
 
-- Tratar falhas transitórias sem duplicar operações.
-- Aplicar timeout, retry, fallback e cache com critérios.
+- Separar instruções, contexto, dados e restrições.
+- Comparar zero-shot, few-shot, delimitadores e templates.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. testes de indisponibilidade e latência — 30 min;
+3. refatoração e comparação controlada de prompts — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Integração resiliente.
+Template de prompt justificado.
 
 ## Preparação e continuidade
 

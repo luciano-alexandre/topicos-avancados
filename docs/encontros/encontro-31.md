@@ -1,26 +1,26 @@
-# Encontro 31 — Workflows inteligentes, filas e human-in-the-loop
+# Encontro 31 — IA no ciclo de desenvolvimento de software
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Workflows inteligentes, filas e human-in-the-loop.
+- tema curricular: IA no ciclo de desenvolvimento de software.
 
 ## Objetivos
 
-- Encadear prompts e decisões determinísticas.
-- Projetar processamento assíncrono e aprovação humana.
+- Avaliar apoio em requisitos, código, testes e logs.
+- Verificar criticamente artefatos gerados.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. implementação de fluxo com estados e retomada — 30 min;
+3. revisão de código e geração de testes — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Workflow testável.
+Relatório de ganhos e falhas.
 
 ## Preparação e continuidade
 

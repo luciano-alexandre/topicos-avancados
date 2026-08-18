@@ -1,26 +1,26 @@
-# Encontro 14 — Versionamento, testes e redução de alucinações
+# Encontro 14 — Structured output, JSON Schema e validação
 
 ## Organização
 
 - Unidade pedagógica: 1;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Versionamento, testes e redução de alucinações.
+- tema curricular: Structured output, JSON Schema e validação.
 
 ## Objetivos
 
-- Versionar prompts como artefatos de software.
-- Criar casos de regressão e estratégias de redução de alucinações.
+- Definir contratos de saída estruturada.
+- Converter e validar respostas em objetos TypeScript.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. teste A/B e análise de erros — 30 min;
+3. criação de schema e tratamento de respostas inválidas — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Suíte mínima de prompts.
+Extrator tipado e validado.
 
 ## Preparação e continuidade
 

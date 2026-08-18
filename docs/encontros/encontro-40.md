@@ -1,28 +1,47 @@
-# Encontro 40 — Apresentações dos projetos — parte 2 e encerramento
+# Encontro 40 — Síntese integradora, devolutivas e encerramento
 
-## Organização
+## Tema
 
-- Unidade pedagógica: 2;
-- duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: apresentação e avaliação dos projetos finais.
+Consolidação das aprendizagens, devolutiva dos projetos e planejamento de
+evolução técnica após a disciplina.
 
 ## Objetivos
 
-- Apresentar problema, arquitetura, funcionamento e resultados.
-- Consolidar aprendizados e realizar a retrospectiva da disciplina.
+- relacionar os componentes estudados em uma arquitetura completa;
+- analisar evidências de qualidade, segurança e operação dos projetos;
+- registrar aprendizados, limitações e próximos passos;
+- realizar a devolutiva final de forma formativa.
 
-## Desenvolvimento sugerido
+## Organização dos 90 minutos
 
-1. abertura e organização das apresentações — 5 min;
-2. apresentações e demonstrações dos projetos — 65 min;
-3. feedback, retrospectiva e encerramento — 20 min.
+| Etapa | Tempo | Atividade |
+|---|---:|---|
+| mapa de conceitos | 15 min | reconstrução coletiva da arquitetura da disciplina |
+| devolutiva cruzada | 25 min | análise de decisões e evidências dos projetos |
+| retrospectiva | 20 min | manter, melhorar, interromper e experimentar |
+| plano de evolução | 20 min | definição de três próximos passos verificáveis |
+| encerramento | 10 min | síntese individual e avaliação da trajetória |
 
-## Evidência de aprendizagem
+```mermaid
+flowchart LR
+    P[Problema] --> M[Modelo e prompt]
+    M --> I[Integração Web]
+    I --> R[RAG e ferramentas]
+    R --> A[Avaliação]
+    A --> O[Observabilidade]
+    O --> S[Segurança e governança]
+    S --> P
+```
 
-Apresentação e entrega final dos projetos.
+## Produto final
 
-## Preparação e continuidade
+Cada equipe registra uma página contendo: principal decisão arquitetural,
+evidência de que funcionou, limitação conhecida, risco prioritário e três ações
+para uma próxima versão. O documento complementa, sem substituir, as entregas e
+avaliações previstas no projeto final.
 
-Consultar as referências oficiais relacionadas ao tema, registrar versões de
-modelos e ferramentas utilizadas e integrar a evidência ao portfólio ou ao
-projeto quando aplicável.
+## Síntese do encontro
+
+Uma funcionalidade de IA só está pronta quando sua utilidade, limites,
+qualidade, segurança e operação podem ser explicados por evidências. O
+encerramento transforma a apresentação final em um plano concreto de evolução.

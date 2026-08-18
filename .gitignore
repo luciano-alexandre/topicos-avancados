@@ -11,3 +11,5 @@ coverage/
 *.log
 ollama-data/
 postgres-data/
+
+

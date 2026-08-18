@@ -1,26 +1,26 @@
-# Encontro 28 — RAG avançado: busca híbrida, reescrita, reranking e múltiplas fontes
+# Encontro 28 — Chatbot, workflow e agente; estado e memória
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: RAG avançado: busca híbrida, reescrita, reranking e múltiplas fontes.
+- tema curricular: Chatbot, workflow e agente; estado e memória.
 
 ## Objetivos
 
-- Melhorar consultas e ordenar resultados.
-- Tratar múltiplas fontes e controlar contexto.
+- Distinguir as três arquiteturas.
+- Modelar objetivos, estado, memória e autonomia.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. experimento A/B com estratégias avançadas — 30 min;
+3. classificação de cenários e desenho de alternativas — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Pipeline RAG aprimorado.
+Decisão arquitetural justificada.
 
 ## Preparação e continuidade
 

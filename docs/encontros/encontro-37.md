@@ -1,4 +1,4 @@
-# Encontro 37 — Acompanhamento do projeto: integração e revisão arquitetural
+# Encontro 37 — Acompanhamento do projeto: testes, segurança e documentação
 
 ## Organização
 
@@ -8,19 +8,19 @@
 
 ## Objetivos
 
-- Acompanhar a integração dos componentes principais.
-- Revisar arquitetura, escopo e fronteiras entre IA e regras determinísticas.
+- Acompanhar testes, segurança, avaliação e documentação.
+- Preparar uma versão estável para apresentação.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
-2. apresentação do estado de cada projeto — 20 min;
-3. desenvolvimento orientado e revisão arquitetural — 50 min;
+2. verificação dos critérios do projeto — 20 min;
+3. testes, correções e ensaio técnico — 50 min;
 4. síntese e registro da evidência — 10 min.
 
 ## Evidência de aprendizagem
 
-Plano de ajustes e versão integrada do projeto.
+Release candidate e roteiro de apresentação.
 
 ## Preparação e continuidade
 
