@@ -174,6 +174,17 @@ flowchart TD
 Esta atividade é **individual**. Cada estudante deve executar o Passo 1 com dois
 modelos locais e o Passo 2 com a API do Gemini.
 
+O objetivo é verificar, por meio de medições reproduzíveis, como uma mesma frase
+pode ocupar quantidades diferentes de tokens conforme o modelo, o tokenizador e
+a forma utilizada para montar a requisição. A atividade também permite
+relacionar tokenização ao consumo da janela de contexto.
+
+Ao concluir os dois passos, o estudante conseguirá observar a fragmentação do
+texto nos modelos locais, identificar os tokens acrescentados pelo template de
+conversa e comparar essa inspeção com a contagem oficial fornecida pelo Gemini.
+Também perceberá que papéis, tokens especiais e instruções de sistema ocupam
+espaço mesmo quando não aparecem como parte da mensagem escrita pelo usuário.
+
 #### Tabela de preenchimento
 
 Preencha uma linha para cada um dos dois modelos locais do Passo 1 e uma linha
