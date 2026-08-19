@@ -167,7 +167,13 @@ flowchart TD
 - [Qwen — model card e descrição do tokenizer](https://huggingface.co/Qwen/Qwen-7B);
 - [DeepSeek-V3 — implementação oficial de inferência](https://github.com/deepseek-ai/DeepSeek-V3/blob/main/inference/generate.py).
 
-### Demonstração comparativa sugerida
+### Atividade prática
+
+Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e,
+conforme a credencial disponibilizada pelo professor, escolher Gemini **ou**
+Claude no Passo 2. Não é necessário pagar ou criar uma conta pessoal: se não
+houver credencial institucional, o professor pode fornecer a resposta JSON
+previamente obtida para que o estudante faça a análise.
 
 Use exatamente a mesma entrada em três modelos disponíveis:
 
@@ -175,10 +181,11 @@ Use exatamente a mesma entrada em três modelos disponíveis:
 Programação, aplicações Web e IA: custo, segurança e explicabilidade.
 ```
 
-Para cada modelo, registre o identificador completo, a ferramenta de contagem,
-os tokens visíveis quando disponíveis, o total do texto isolado e o total da
-mensagem completa. A diferença entre esses dois totais revela o custo de tokens
-especiais, papéis, templates de conversa e outros metadados.
+Para cada modelo local, registre o identificador completo, a ferramenta de
+contagem, os tokens visíveis, o total do texto isolado e o total da mensagem
+completa. Para a API escolhida, registre os totais das requisições base e
+completa. Os cálculos e suas diferenças de interpretação são apresentados nos
+passos seguintes.
 
 #### O que será medido
 
@@ -194,21 +201,50 @@ O overhead não é necessariamente constante. Ele pode mudar com o modelo, a
 versão do chat template, o número de mensagens, ferramentas e outros campos da
 requisição.
 
-#### Opção A — execução local com modelos abertos
+#### Passo 1 — execução local com modelos abertos
 
-Não é necessário baixar os pesos nem executar a inferência. O aluno baixa
+Não é necessário baixar os pesos nem executar a inferência. O estudante baixa
 somente os arquivos pequenos do tokenizador associados ao checkpoint.
 
-1. Criar um ambiente Python descartável.
-2. Instalar `transformers`, `sentencepiece` e `tiktoken`.
-3. Escolher três checkpoints públicos que possuam chat template.
-4. Executar o script abaixo, trocando os identificadores quando necessário.
+##### 1.1 Preparar a pasta e conferir o Python
+
+Abra o terminal, crie uma pasta para a atividade e entre nela:
 
 ```bash
-python -m venv .venv-tokenizacao
-source .venv-tokenizacao/bin/activate
-python -m pip install transformers sentencepiece tiktoken
+mkdir atividade-tokenizacao
+cd atividade-tokenizacao
+python3 --version
 ```
+
+É necessário Python 3.10 ou superior. No Windows, o comando de versão pode ser
+`py --version`.
+
+##### 1.2 Criar e ativar o ambiente virtual
+
+```bash
+python3 -m venv .venv-tokenizacao
+source .venv-tokenizacao/bin/activate
+```
+
+No PowerShell do Windows, a ativação correspondente é:
+
+```powershell
+.\.venv-tokenizacao\Scripts\Activate.ps1
+```
+
+##### 1.3 Instalar as dependências
+
+```bash
+python3 -m pip install --upgrade pip
+python3 -m pip install transformers sentencepiece tiktoken
+```
+
+Os pesos dos modelos não serão baixados. `AutoTokenizer` obtém somente os
+arquivos necessários para tokenização, mas o primeiro uso requer Internet.
+
+##### 1.4 Criar o programa
+
+Crie o arquivo `comparar_tokenizadores.py`, copie o código abaixo e salve-o:
 
 ```python
 from transformers import AutoTokenizer
@@ -246,6 +282,19 @@ for modelo in MODELOS:
     print("Overhead:", len(ids_mensagem) - len(ids_texto))
 ```
 
+##### 1.5 Executar e guardar a evidência
+
+```bash
+python3 comparar_tokenizadores.py
+```
+
+Copie os resultados para a tabela da atividade. Se houver erro de acesso a um
+checkpoint, registre a mensagem e substitua somente esse identificador por uma
+variante pública *Instruct/Chat*. Não baixe executáveis oferecidos por páginas
+não oficiais e não use `trust_remote_code=True` sem autorização do professor.
+
+##### 1.6 Interpretar os tokens
+
 `convert_ids_to_tokens()` apresenta a representação interna dos tokens. Marcas
 como `▁`, `Ġ`, escapes ou fragmentos de bytes não são erros: elas representam
 espaços, limites ou bytes conforme o tokenizador. Para observar exatamente o
@@ -257,23 +306,139 @@ for token_id in ids_texto:
 ```
 
 Se `apply_chat_template()` informar que o checkpoint não possui template, o
-aluno deve escolher uma variante *Instruct/Chat* documentada. Não deve inventar
-um template, pois isso invalidaria a comparação.
+estudante deve escolher uma variante *Instruct/Chat* documentada. Não deve
+inventar um template, pois isso invalidaria a comparação.
 
-#### Opção B — modelos acessados por API
+#### Passo 2 — contagem por API com Gemini ou Claude
 
-Para Claude e Gemini, use os endpoints oficiais de contagem com a mensagem
-completa. Para OpenAI, `tiktoken` permite inspecionar o texto isolado, enquanto
-a contagem autoritativa da requisição completa deve ser obtida no campo de uso
-retornado pela API. O procedimento é:
+Neste passo, a API geralmente retorna a contagem, mas não os IDs ou fragmentos
+individuais. Portanto, registre “não” em **Tokens visíveis**. Escolha apenas uma
+das alternativas abaixo.
 
-1. selecionar e registrar o identificador exato do modelo;
-2. contar somente `TEXTO` com a ferramenta oficial ou compatível;
-3. representar o mesmo texto como uma mensagem com papel `user`;
-4. solicitar a contagem da mensagem ou realizar uma resposta mínima e consultar
-   o campo de tokens de entrada retornado;
-5. calcular o overhead e anotar “tokens individuais não expostos” quando a API
-   fornecer apenas o total.
+##### Alternativa 2A — Gemini
+
+**Método e rota:**
+
+```text
+POST https://generativelanguage.googleapis.com/v1beta/models/{modelo}:countTokens
+```
+
+1. Receba a chave temporária conforme a orientação do professor.
+2. No terminal, armazene a chave e o modelo em variáveis de ambiente. O exemplo
+   de modelo deve ser confirmado na documentação antes da aula.
+
+```bash
+export GEMINI_API_KEY="chave-fornecida-pelo-professor"
+export GEMINI_MODEL="gemini-3.6-flash"
+```
+
+3. Faça a contagem da mensagem simples:
+
+```bash
+curl -sS -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:countTokens" \
+  -H "x-goog-api-key: ${GEMINI_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [{
+        "text": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+      }]
+    }]
+  }'
+```
+
+4. Localize `totalTokens` na resposta e registre-o como `T_base`.
+5. Repita a chamada acrescentando uma instrução de sistema, o que representa
+   uma entrada mais completa:
+
+```bash
+curl -sS -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:countTokens" \
+  -H "x-goog-api-key: ${GEMINI_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "generateContentRequest": {
+      "model": "models/'"${GEMINI_MODEL}"'",
+      "systemInstruction": {
+        "parts": [{"text": "Responda em português e em uma frase."}]
+      },
+      "contents": [{
+        "role": "user",
+        "parts": [{
+          "text": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+        }]
+      }]
+    }
+  }'
+```
+
+6. Registre o novo `totalTokens` como `T_completa` e calcule
+   `delta_API = T_completa - T_base`.
+
+##### Alternativa 2B — Claude
+
+**Método e rota:**
+
+```text
+POST https://api.anthropic.com/v1/messages/count_tokens
+```
+
+1. Receba a chave temporária e confirme o modelo indicado pelo professor.
+2. Defina as variáveis de ambiente:
+
+```bash
+export ANTHROPIC_API_KEY="chave-fornecida-pelo-professor"
+export CLAUDE_MODEL="claude-opus-4-6"
+```
+
+3. Conte a mensagem simples:
+
+```bash
+curl -sS -X POST \
+  "https://api.anthropic.com/v1/messages/count_tokens" \
+  -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "'"${CLAUDE_MODEL}"'",
+    "messages": [{
+      "role": "user",
+      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+    }]
+  }'
+```
+
+4. Localize `input_tokens` e registre-o como `T_base`.
+5. Repita a chamada acrescentando a instrução de sistema:
+
+```bash
+curl -sS -X POST \
+  "https://api.anthropic.com/v1/messages/count_tokens" \
+  -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "'"${CLAUDE_MODEL}"'",
+    "system": "Responda em português e em uma frase.",
+    "messages": [{
+      "role": "user",
+      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+    }]
+  }'
+```
+
+6. Registre o novo `input_tokens` como `T_completa` e calcule
+   `delta_API = T_completa - T_base`.
+
+##### 2.3 Interpretar corretamente a medição da API
+
+`delta_API` mede a diferença entre duas requisições processadas pelo mesmo
+serviço. Ele inclui a instrução acrescentada e qualquer representação associada;
+portanto, não é igual ao overhead isolado do chat template calculado no Passo 1.
+Em Claude e Gemini, não preencha `T_texto` com uma estimativa de outro
+tokenizador. Quando o provedor não expuser essa medição, escreva “não exposto”.
 
 As chaves devem permanecer em variáveis de ambiente e nunca ser inseridas na
 planilha, no código versionado, em capturas de tela ou no relatório. Uma única
@@ -282,11 +447,11 @@ não exige que cada aluno contrate uma API.
 
 #### Como preencher o registro
 
-| Modelo e versão | Ferramenta | Tokens visíveis | `T_texto` | `T_mensagem` | Overhead | Método |
+| Modelo e versão | Ferramenta | Tokens visíveis | `T_texto` | `T_mensagem`/`T_base` | Overhead/`delta_API` | Método |
 |---|---|---|---:|---:|---:|---|
-| | | sim/não | | | | local/API |
-| | | sim/não | | | | local/API |
-| | | sim/não | | | | local/API |
+| | | sim/não | | | | local |
+| | | sim/não | | | | local |
+| | | não | não exposto | | | API |
 
 Além da tabela, registre a data, a revisão do checkpoint ou versão da API, a
 frase exata e se `add_generation_prompt=True` foi usado. Sem essas informações,
@@ -294,7 +459,7 @@ outra pessoa pode obter uma contagem diferente sem que isso indique erro.
 
 #### Interpretação orientada
 
-Ao final, cada grupo deve responder:
+Ao final, cada estudante deve responder individualmente:
 
 1. Qual tokenizador fragmentou mais a frase em português?
 2. Quais sinais representam espaços, acentos ou fragmentos de bytes?
