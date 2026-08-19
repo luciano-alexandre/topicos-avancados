@@ -16,18 +16,6 @@ articulados à seleção responsável de modelos, licenças e model cards.
 - Analisar licenças, limitações e adequação ao idioma e à tarefa.
 - Produzir uma comparação técnica sem depender de rankings isolados.
 
-## Roteiro dos 90 minutos
-
-| Etapa | Tempo | Estratégia |
-|---|---:|---|
-| retomada | 5 min | resultados da atividade de tokenização |
-| contexto e geração | 20 min | janela, orçamento e parâmetros de decodificação |
-| limitações | 15 min | variabilidade, alucinação, vieses e multimodalidade |
-| ecossistema | 15 min | abertura, famílias, variantes e licenças |
-| leitura guiada | 15 min | anatomia de um model card e benchmarks |
-| oficina comparativa | 15 min | aplicação da ficha a dois candidatos |
-| síntese | 5 min | decisão provisória baseada em evidências |
-
 ## Visão geral
 
 O resultado da tokenização estudada no Encontro 03 é apenas uma parte do
@@ -38,9 +26,6 @@ Escolher um modelo porque ele é popular ou ocupa boa posição em um ranking n�
 é suficiente. A seleção precisa considerar tarefa, idioma, licença, memória,
 latência, formato de distribuição, qualidade, riscos e manutenção.
 
-Os catálogos mudam rapidamente. Por isso, o objetivo deste encontro não é
-decorar uma lista de modelos. É aprender um método de leitura e decisão que
-continue válido quando novas versões forem publicadas.
 
 ## Contexto, geração e limitações
 
@@ -52,15 +37,12 @@ continue válido quando novas versões forem publicadas.
 - limitam o tamanho máximo da resposta;
 - afetam estratégias de chunking e RAG.
 
-### Atividade de estimativa
+### Realizando uma estimativa
 
 Compare três entradas: um parágrafo em português, um trecho de código e uma
 tabela JSON. Antes de usar um tokenizador, estime qual entrada utilizará mais
 tokens. Depois, confronte as estimativas com uma ferramenta compatível com o
 modelo escolhido.
-
-O objetivo não é decorar uma proporção, mas perceber que idioma, símbolos,
-formatação e tokenizador alteram o resultado.
 
 ## Janela de contexto
 
@@ -147,12 +129,6 @@ flowchart LR
     N --> T
     T --> O[Próximo token]
 ```
-
-### Seed
-
-Algumas ferramentas aceitam uma semente para facilitar reprodução. Mesmo assim,
-mudanças de versão, hardware, biblioteca ou configuração podem alterar o
-resultado.
 
 ## Determinismo e variabilidade
 
