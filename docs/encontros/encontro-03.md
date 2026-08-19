@@ -126,8 +126,7 @@ Essa segmentação é ilustrativa: o resultado real depende do tokenizador.
 
 Não é correto associar permanentemente uma empresa a um único tokenizador. O
 tokenizador acompanha o **modelo e sua versão**, e pode mudar entre gerações,
-variantes de texto, código ou multimodais. A tabela abaixo é um mapa de estudo,
-verificado em 18 de agosto de 2026, e não uma lista imutável.
+variantes de texto, código ou multimodais. A tabela abaixo apresenta o cenário na data atual(19/08/2026).
 
 | Ecossistema ou família | Tokenizador ou forma de acesso | O que registrar no experimento |
 |---|---|---|
@@ -181,11 +180,128 @@ os tokens visíveis quando disponíveis, o total do texto isolado e o total da
 mensagem completa. A diferença entre esses dois totais revela o custo de tokens
 especiais, papéis, templates de conversa e outros metadados.
 
-| Modelo e versão | Tokenizador/endpoint | Texto isolado | Mensagem completa | Observações |
-|---|---|---:|---:|---|
-| | | | | |
-| | | | | |
-| | | | | |
+#### O que será medido
+
+Defina:
+
+- `T_texto`: quantidade de tokens da frase, sem template e sem tokens especiais;
+- `T_mensagem`: quantidade de tokens depois de representar a frase como uma
+  mensagem de usuário completa;
+- `overhead = T_mensagem - T_texto`: tokens acrescentados pelo protocolo de
+  conversa, como início e fim de sequência, papel e marcador de geração.
+
+O overhead não é necessariamente constante. Ele pode mudar com o modelo, a
+versão do chat template, o número de mensagens, ferramentas e outros campos da
+requisição.
+
+#### Opção A — execução local com modelos abertos
+
+Não é necessário baixar os pesos nem executar a inferência. O aluno baixa
+somente os arquivos pequenos do tokenizador associados ao checkpoint.
+
+1. Criar um ambiente Python descartável.
+2. Instalar `transformers`, `sentencepiece` e `tiktoken`.
+3. Escolher três checkpoints públicos que possuam chat template.
+4. Executar o script abaixo, trocando os identificadores quando necessário.
+
+```bash
+python -m venv .venv-tokenizacao
+source .venv-tokenizacao/bin/activate
+python -m pip install transformers sentencepiece tiktoken
+```
+
+```python
+from transformers import AutoTokenizer
+
+TEXTO = (
+    "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+)
+
+MODELOS = [
+    "Qwen/Qwen2.5-0.5B-Instruct",
+    "mistralai/Mistral-7B-Instruct-v0.3",
+    # Substitua ou acrescente outro checkpoint público compatível.
+]
+
+for modelo in MODELOS:
+    tokenizer = AutoTokenizer.from_pretrained(modelo)
+
+    ids_texto = tokenizer.encode(TEXTO, add_special_tokens=False)
+    ids_mensagem = tokenizer.apply_chat_template(
+        [{"role": "user", "content": TEXTO}],
+        tokenize=True,
+        add_generation_prompt=True,
+    )
+
+    tokens_visiveis = tokenizer.convert_ids_to_tokens(ids_texto)
+    revisao = tokenizer.init_kwargs.get("_commit_hash", "não informada")
+
+    print("\nModelo:", modelo)
+    print("Revisão:", revisao)
+    print("Classe:", tokenizer.__class__.__name__)
+    print("IDs do texto:", ids_texto)
+    print("Tokens visíveis:", tokens_visiveis)
+    print("T_texto:", len(ids_texto))
+    print("T_mensagem:", len(ids_mensagem))
+    print("Overhead:", len(ids_mensagem) - len(ids_texto))
+```
+
+`convert_ids_to_tokens()` apresenta a representação interna dos tokens. Marcas
+como `▁`, `Ġ`, escapes ou fragmentos de bytes não são erros: elas representam
+espaços, limites ou bytes conforme o tokenizador. Para observar exatamente o
+texto que cada ID recompõe, pode-se executar:
+
+```python
+for token_id in ids_texto:
+    print(token_id, repr(tokenizer.decode([token_id])))
+```
+
+Se `apply_chat_template()` informar que o checkpoint não possui template, o
+aluno deve escolher uma variante *Instruct/Chat* documentada. Não deve inventar
+um template, pois isso invalidaria a comparação.
+
+#### Opção B — modelos acessados por API
+
+Para Claude e Gemini, use os endpoints oficiais de contagem com a mensagem
+completa. Para OpenAI, `tiktoken` permite inspecionar o texto isolado, enquanto
+a contagem autoritativa da requisição completa deve ser obtida no campo de uso
+retornado pela API. O procedimento é:
+
+1. selecionar e registrar o identificador exato do modelo;
+2. contar somente `TEXTO` com a ferramenta oficial ou compatível;
+3. representar o mesmo texto como uma mensagem com papel `user`;
+4. solicitar a contagem da mensagem ou realizar uma resposta mínima e consultar
+   o campo de tokens de entrada retornado;
+5. calcular o overhead e anotar “tokens individuais não expostos” quando a API
+   fornecer apenas o total.
+
+As chaves devem permanecer em variáveis de ambiente e nunca ser inseridas na
+planilha, no código versionado, em capturas de tela ou no relatório. Uma única
+credencial demonstrativa controlada pelo professor é suficiente; a atividade
+não exige que cada aluno contrate uma API.
+
+#### Como preencher o registro
+
+| Modelo e versão | Ferramenta | Tokens visíveis | `T_texto` | `T_mensagem` | Overhead | Método |
+|---|---|---|---:|---:|---:|---|
+| | | sim/não | | | | local/API |
+| | | sim/não | | | | local/API |
+| | | sim/não | | | | local/API |
+
+Além da tabela, registre a data, a revisão do checkpoint ou versão da API, a
+frase exata e se `add_generation_prompt=True` foi usado. Sem essas informações,
+outra pessoa pode obter uma contagem diferente sem que isso indique erro.
+
+#### Interpretação orientada
+
+Ao final, cada grupo deve responder:
+
+1. Qual tokenizador fragmentou mais a frase em português?
+2. Quais sinais representam espaços, acentos ou fragmentos de bytes?
+3. Qual foi o overhead do template de conversa em cada modelo?
+4. Por que o resultado não permite concluir qual modelo é “melhor”?
+5. O que mudaria ao adicionar uma instrução de sistema e uma segunda mensagem?
+6. Quais resultados vieram do tokenizer local e quais vieram da API oficial?
 
 Não compare custos usando apenas a quantidade de palavras. Também não utilize o
 tokenizador de uma família para estimar outra quando a API disponibilizar a
