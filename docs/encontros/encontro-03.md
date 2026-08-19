@@ -122,6 +122,75 @@ flowchart LR
 
 Essa segmentação é ilustrativa: o resultado real depende do tokenizador.
 
+### Tokenizadores em ecossistemas populares
+
+Não é correto associar permanentemente uma empresa a um único tokenizador. O
+tokenizador acompanha o **modelo e sua versão**, e pode mudar entre gerações,
+variantes de texto, código ou multimodais. A tabela abaixo é um mapa de estudo,
+verificado em 18 de agosto de 2026, e não uma lista imutável.
+
+| Ecossistema ou família | Tokenizador ou forma de acesso | O que registrar no experimento |
+|---|---|---|
+| OpenAI — famílias GPT e modelos de raciocínio | A OpenAI disponibiliza a biblioteca `tiktoken`; a codificação exata deve ser resolvida para o identificador do modelo, por exemplo com `encoding_for_model()` | modelo, codificação retornada, tokens do texto e tokens adicionais da estrutura da requisição |
+| Anthropic Claude | O tokenizador de produção não é distribuído como artefato local estável; a contagem oficial deve ser obtida pelo endpoint de contagem de tokens | identificador do modelo, conteúdo completo da mensagem e total retornado pela API |
+| Google Gemini | A documentação não exige que o cliente reproduza localmente o tokenizador; a API oferece `countTokens` para executar a contagem compatível com o modelo | modelo, modalidades enviadas e total retornado por `countTokens` |
+| Meta Llama | O artefato do tokenizer acompanha cada checkpoint. Versões clássicas usam BPE baseado em SentencePiece, com byte fallback; não se deve generalizar esse detalhe sem conferir a variante atual | repositório e revisão do checkpoint, classe carregada por `AutoTokenizer`, vocabulário e tokens especiais |
+| Mistral e Mixtral | As versões V1–V3 tradicionais são baseadas em SentencePiece; variantes como Mistral Nemo e Pixtral usam **Tekken**, baseado em `tiktoken` | nome completo do modelo, versão do tokenizer, chat template e tokens de controle |
+| Qwen | O Qwen original documenta um tokenizer executado com `tiktoken`; gerações posteriores devem ser verificadas no `tokenizer.json` e carregadas pelo `AutoTokenizer` do checkpoint | geração exata, revisão do repositório, tamanho do vocabulário e chat template |
+| DeepSeek | Os modelos abertos fornecem os artefatos do tokenizer junto ao checkpoint e o código oficial usa `AutoTokenizer`; a API deve ser tratada conforme a versão publicada | identificador exato, revisão do checkpoint e contagem produzida pelo artefato ou pela API oficial |
+
+#### Por que usar “ecossistema ou família” em vez de “IA”?
+
+ChatGPT, Claude e Gemini são produtos que podem encaminhar solicitações para
+modelos diferentes. Llama, Qwen e DeepSeek também designam famílias com várias
+gerações. Consequentemente, dizer apenas “o tokenizador do ChatGPT” ou “o
+tokenizador do Llama” omite a informação que torna a contagem reproduzível.
+
+```mermaid
+flowchart TD
+    A[Escolher o modelo exato] --> B{Tokenizador público?}
+    B -->|sim| C[Carregar artefato da mesma revisão]
+    B -->|não| D[Usar endpoint oficial de contagem]
+    C --> E[Aplicar o chat template]
+    D --> F[Enviar a mesma estrutura da requisição]
+    E --> G[Registrar IDs, tokens especiais e total]
+    F --> G
+    G --> H[Repetir após troca de modelo ou versão]
+```
+
+#### Fontes para conferência e atualização
+
+- [OpenAI Tokenizer e biblioteca tiktoken](https://platform.openai.com/tokenizer/);
+- [Anthropic — contagem de tokens em mensagens](https://docs.anthropic.com/en/api/messages-count-tokens);
+- [Google Gemini — compreensão e contagem de tokens](https://ai.google.dev/gemini-api/docs/tokens);
+- [Hugging Face Transformers — tokenizer da família Llama](https://huggingface.co/docs/transformers/model_doc/llama);
+- [Mistral — aprofundamento sobre tokenização](https://docs.mistral.ai/resources/cookbooks/concept-deep-dive-tokenization-readme);
+- [Qwen — model card e descrição do tokenizer](https://huggingface.co/Qwen/Qwen-7B);
+- [DeepSeek-V3 — implementação oficial de inferência](https://github.com/deepseek-ai/DeepSeek-V3/blob/main/inference/generate.py).
+
+### Demonstração comparativa sugerida
+
+Use exatamente a mesma entrada em três modelos disponíveis:
+
+```text
+Programação, aplicações Web e IA: custo, segurança e explicabilidade.
+```
+
+Para cada modelo, registre o identificador completo, a ferramenta de contagem,
+os tokens visíveis quando disponíveis, o total do texto isolado e o total da
+mensagem completa. A diferença entre esses dois totais revela o custo de tokens
+especiais, papéis, templates de conversa e outros metadados.
+
+| Modelo e versão | Tokenizador/endpoint | Texto isolado | Mensagem completa | Observações |
+|---|---|---:|---:|---|
+| | | | | |
+| | | | | |
+| | | | | |
+
+Não compare custos usando apenas a quantidade de palavras. Também não utilize o
+tokenizador de uma família para estimar outra quando a API disponibilizar a
+contagem oficial.
+
 ### Por que tokens importam?
 
 - definem o tamanho efetivo da entrada;
