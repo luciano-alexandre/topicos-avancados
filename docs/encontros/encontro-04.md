@@ -223,141 +223,157 @@ texto, imagem e áudio. A integração exige considerar:
 - dados pessoais presentes em imagem ou voz;
 - validação específica para cada modalidade.
 
-## Experimento guiado: variabilidade e contexto
+## Experimento guiado: variabilidade, instrução e contexto
 
-Este experimento pode ser realizado diretamente em um chatbot, sem instalar ou
-configurar um modelo local. Será utilizado o **Google AI Studio**, que oferece
-uma interface de chat no navegador e um painel com informações do modelo e
-configurações da execução.
+Este experimento será realizado diretamente no chatbot gratuito disponível em
+[gemini.google.com](https://gemini.google.com/). Não é necessário instalar um
+modelo, criar projeto no Google Cloud, gerar chave de API ou ativar faturamento.
 
-Um chatbot de uso geral também permite observar repetição e efeito do contexto,
-mas normalmente não mostra a versão exata nem permite controlar parâmetros.
-Por isso, o Google AI Studio é a opção recomendada para manter o experimento
-reproduzível.
+Se a interface oferecer um modelo ou recurso marcado como **Pro**, **Advanced**,
+**Upgrade** ou equivalente, não o selecione. Permaneça no modelo padrão gratuito.
 
 ### Objetivo da atividade
 
-Observar que a saída de um LLM pode variar mesmo quando o pedido é repetido,
-separar estabilidade de correção e verificar como a presença de contexto altera
-a resposta. Ao final, o estudante deverá conseguir justificar por que uma
-aplicação não pode validar qualidade comparando apenas uma resposta com uma
-string fixa.
+Observar que a saída de um LLM pode variar quando o mesmo pedido é repetido,
+verificar a sensibilidade à formulação da instrução e comparar uma resposta sem
+evidências com outra apoiada em contexto delimitado. Ao final, o estudante
+deverá justificar por que aplicações precisam validar conteúdo e estrutura em
+vez de comparar a resposta inteira com uma string fixa.
+
+### Limites do uso de um chatbot
+
+A interface gratuita pode não informar o identificador técnico ou a versão do
+modelo e não permite controlar temperatura, top-p, top-k ou seed. Esses valores
+não serão estimados nem inventados. A ausência de tais informações deve ser
+registrada como uma limitação do experimento.
+
+O experimento não pretende comparar modelos nem medir o efeito da temperatura.
+Ele controla apenas elementos disponíveis a qualquer estudante: histórico,
+texto da instrução e contexto fornecido.
 
 ### Antes de começar
 
-1. Acesse [Google AI Studio](https://aistudio.google.com/) e entre com sua conta
-   Google.
-2. Abra o **Playground** e crie um novo **Chat prompt**.
-3. No seletor de modelo, escolha `gemini-2.5-flash`.
-4. Abra **Run settings** e desative ferramentas como busca, grounding e execução
-   de código. Elas poderiam acrescentar fontes externas e alterar o experimento.
-5. Não preencha **System instructions** neste momento.
-6. Registre na tabela: modelo, data, horário e configurações exibidas.
+1. Acesse [gemini.google.com](https://gemini.google.com/) em um navegador.
+2. Entre com uma conta Google pessoal, se a interface solicitar. Algumas funções
+   básicas podem estar disponíveis sem autenticação.
+3. Não aceite oferta de teste pago nem selecione **Upgrade**.
+4. Use o modelo padrão gratuito apresentado pela interface.
+5. Desative busca, pesquisa aprofundada, Canvas e outras ferramentas, quando a
+   interface permitir.
+6. Inicie uma conversa nova e confirme que ela não possui mensagens anteriores.
+7. Registre data, horário, nome comercial exibido e navegador. Se a versão não
+   aparecer, escreva **modelo não informado pela interface**.
 
-O modelo `gemini-2.5-flash` é indicado porque permite realizar o experimento no
-navegador e ainda oferece controles de geração. Modelos Gemini 3.6 e gerações
-posteriores podem ignorar ou descontinuar `temperature`, `top-p` e `top-k`; se o
-controle não estiver disponível para o modelo escolhido, não invente um valor e
-registre a limitação.
+Não envie dados pessoais, documentos institucionais ou informações sigilosas.
 
 ### Tabela de registro
 
 Preencha uma linha imediatamente após cada execução.
 
-| Execução | Parte | Modelo | Configuração | Contexto fornecido | Resultado observado |
+| Execução | Parte | Instrução | Contexto | Comportamento observado | Limitação |
 |---:|:---:|---|---|---|---|
-| 1 | A | | padrão | nenhum | |
-| 2 | A | | padrão | nenhum | |
-| 3 | A | | padrão | nenhum | |
-| 4 | B | | temperatura baixa | nenhum | |
-| 5 | B | | temperatura padrão | nenhum | |
-| 6 | C | | padrão | nenhum | |
-| 7 | C | | padrão | Política Zeta | |
+| 1 | A | idêntica | nenhum | | |
+| 2 | A | idêntica | nenhum | | |
+| 3 | A | idêntica | nenhum | | |
+| 4 | B | aberta | nenhum | | |
+| 5 | B | estruturada | nenhum | | |
+| 6 | C | pergunta | nenhum | | |
+| 7 | C | pergunta | Política Zeta | | |
 
-Na coluna **Resultado observado**, não copie obrigatoriamente toda a resposta.
-Registre tamanho aproximado, argumentos principais, afirmações diferentes,
-eventual recusa e qualquer informação aparentemente inventada.
+Em **Comportamento observado**, registre tamanho, argumentos, organização,
+atendimento às restrições, eventual recusa e informação aparentemente
+inventada. Em **Limitação**, registre versão desconhecida, ferramenta que não
+pôde ser desativada ou qualquer condição que prejudique a comparação.
 
 ### Parte A — repetição em conversas independentes
 
-O objetivo desta parte é observar variabilidade sem permitir que uma resposta
-anterior influencie a seguinte.
+O objetivo é observar variabilidade sem permitir que uma resposta anterior
+influencie a seguinte.
 
-1. Crie um chat novo e confirme que não há histórico nem instrução de sistema.
-2. Mantenha as configurações padrão do modelo.
-3. Envie exatamente o texto abaixo:
+1. Inicie uma conversa nova.
+2. Envie exatamente:
 
 ```text
 Explique em até quatro frases por que uma aplicação deve validar a saída de um
 modelo de linguagem.
 ```
 
-4. Registre a execução 1 na tabela.
-5. Crie outro chat novo. Não use **regenerar resposta**, pois essa ação pode
+3. Registre a execução 1.
+4. Inicie outra conversa nova. Não use **regenerar resposta**, pois isso pode
    preservar estado ou metadados da conversa.
-6. Envie o mesmo texto, sem alterar espaços, pontuação ou capitalização.
-7. Registre a execução 2.
-8. Repita o procedimento em um terceiro chat e registre a execução 3.
+5. Envie o mesmo texto, sem alterar palavras, espaços ou pontuação.
+6. Registre a execução 2.
+7. Repita todo o procedimento em uma terceira conversa e registre a execução 3.
 
-Compare as três respostas usando estes critérios:
+Compare:
 
-- argumentos apresentados;
-- palavras ou exemplos escolhidos;
+- argumentos e exemplos escolhidos;
 - quantidade de frases;
 - atendimento ao limite solicitado;
-- presença de afirmações que exigiriam verificação.
+- vocabulário e ordem das ideias;
+- afirmações que exigiriam verificação.
 
-Uma resposta diferente não é necessariamente pior. Da mesma forma, três
-respostas parecidas não demonstram que o conteúdo esteja correto.
+Uma resposta diferente não é necessariamente pior, e três respostas parecidas
+não demonstram que o conteúdo esteja correto.
 
-### Parte B — mudança controlada de temperatura
+### Parte B — mudança controlada da instrução
 
-Esta parte deve ser realizada somente se **Run settings** apresentar o controle
-de temperatura para `gemini-2.5-flash`.
+Esta parte substitui o teste de temperatura, que não pode ser controlado de
+forma confiável no chatbot gratuito.
 
-1. Crie um chat novo.
-2. Abra **Run settings** e anote o valor padrão exibido para temperatura.
-3. Altere somente a temperatura para um valor baixo aceito pela interface, como
-   `0.2`. Não modifique modelo, top-p, top-k, ferramentas ou instruções.
-4. Envie o mesmo prompt da Parte A e registre a execução 4.
-5. Crie outro chat novo.
-6. Restaure a temperatura ao valor padrão anotado no passo 2.
-7. Envie novamente o mesmo prompt e registre a execução 5.
-8. Compare previsibilidade, vocabulário, estrutura e atendimento ao pedido.
+#### Execução com instrução aberta
 
-O experimento não deve concluir que temperatura baixa produz verdade. Ela pode
-reduzir a diversidade da seleção de tokens, mas uma resposta estável ainda pode
-estar errada. A documentação atual recomenda manter os valores padrão em
-modelos Gemini 3.x; por isso, esses modelos não devem ser usados para simular
-esta comparação caso o parâmetro seja ignorado.
+1. Inicie uma conversa nova.
+2. Envie:
+
+```text
+Explique por que uma aplicação deve validar a saída de um modelo de linguagem.
+```
+
+3. Registre a execução 4, observando formato, extensão e aspectos escolhidos
+   livremente pelo modelo.
+
+#### Execução com instrução estruturada
+
+1. Inicie outra conversa nova.
+2. Envie:
+
+```text
+Explique por que uma aplicação deve validar a saída de um modelo de linguagem.
+Responda em exatamente três itens numerados. Cada item deve conter uma frase e
+tratar, respectivamente, de estrutura, fatos e segurança.
+```
+
+3. Registre a execução 5.
+4. Compare as execuções 4 e 5 sem avaliar apenas qual texto parece mais bonito.
+5. Verifique se a segunda resposta respeitou número, ordem, tamanho e temas.
+
+A mudança observada não deve ser atribuída à temperatura: a variável alterada
+foi a formulação da instrução.
 
 ### Parte C — ausência e fornecimento de contexto
 
-Nesta parte, o estudante compara uma pergunta sem evidência com outra apoiada em
-um pequeno documento fictício.
-
 #### Execução sem contexto
 
-1. Crie um chat novo, sem instrução de sistema.
-2. Restaure todas as configurações ao padrão.
-3. Envie:
+1. Inicie uma conversa nova.
+2. Envie:
 
 ```text
 Segundo a Política Acadêmica Zeta, em quantos dias um estudante pode solicitar
 a revisão de uma atividade e qual formulário deve utilizar?
 ```
 
-4. Registre a execução 6 e classifique o comportamento:
+3. Registre a execução 6 e classifique o comportamento:
 
    - declarou não possuir a política;
    - pediu que o documento fosse fornecido;
-   - respondeu de forma genérica;
+   - respondeu apenas de forma genérica;
    - inventou prazo, formulário ou fonte.
 
 #### Execução com contexto delimitado
 
-1. Crie outro chat novo.
-2. Envie exatamente o conteúdo abaixo:
+1. Inicie outra conversa nova.
+2. Envie exatamente:
 
 ```text
 Responda somente com base no trecho delimitado. Se a resposta não estiver no
@@ -374,8 +390,8 @@ deve utilizar?
 ```
 
 3. Registre a execução 7.
-4. Marque na resposta quais palavras estão diretamente apoiadas pelo trecho.
-5. Verifique se o modelo acrescentou regras que não foram fornecidas.
+4. Marque quais palavras da resposta estão diretamente apoiadas pelo trecho.
+5. Verifique se o chatbot acrescentou regras que não foram fornecidas.
 
 ### Análise individual
 
@@ -383,33 +399,28 @@ Responda por escrito:
 
 1. O que permaneceu igual e o que variou nas três repetições?
 2. Alguma resposta desrespeitou o limite de quatro frases?
-3. Temperatura baixa tornou a resposta correta ou apenas menos variável?
-4. Como o chatbot respondeu quando a Política Zeta não foi fornecida?
-5. Quais afirmações da execução 7 podem ser ligadas diretamente ao trecho?
-6. Que validação poderia ser implementada pelo backend em cada parte?
-7. Qual informação precisa ser registrada para outra pessoa repetir o teste?
+3. Qual foi o efeito de tornar a instrução mais estruturada?
+4. A resposta estruturada cumpriu todos os critérios verificáveis?
+5. Como o chatbot respondeu quando a Política Zeta não foi fornecida?
+6. Quais afirmações da execução 7 estão diretamente sustentadas pelo trecho?
+7. Que validação poderia ser implementada pelo backend em cada parte?
+8. Quais limitações impedem reproduzir exatamente o experimento no futuro?
 
 ### Produto da atividade
 
-Entregue a tabela preenchida, as respostas às sete questões e evidências das
-configurações utilizadas. Capturas de tela são opcionais; quando usadas, devem
-ocultar conta, chave, e-mail e outros dados pessoais.
+Entregue a tabela preenchida e as respostas às oito questões. Capturas de tela
+são opcionais; quando usadas, devem ocultar conta, e-mail e outros dados
+pessoais.
 
-### Se o Google AI Studio não estiver disponível
+### Se o Gemini gratuito não estiver disponível
 
-As Partes A e C podem ser executadas em outro chatbot acessível. Nesse caso:
+Utilize outro chatbot gratuito acessível e siga o mesmo roteiro. Registre o nome
+do produto e escreva **modelo não informado** quando necessário. Não assine um
+plano pago para cumprir a atividade.
 
-- use sempre chats novos;
-- desative busca na Web e ferramentas, quando possível;
-- registre o nome comercial do chatbot e escreva “modelo não informado” quando
-  a interface não apresentar o identificador;
-- não realize a Parte B se a temperatura não estiver disponível;
-- registre essa ausência como limitação, e não como erro do estudante.
-
-Fontes de apoio: [guia oficial do Google AI Studio](https://ai.google.dev/gemini-api/docs/ai-studio-quickstart),
-[documentação do Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
-e [parâmetros de geração](https://ai.google.dev/api/generate-content).
-
+Fontes de apoio: [acesso ao aplicativo Gemini](https://support.google.com/gemini/answer/13278668),
+[limites dos níveis da API](https://ai.google.dev/gemini-api/docs/rate-limits)
+e [faturamento do Gemini](https://ai.google.dev/gemini-api/docs/billing).
 
 ## Da compreensão do comportamento à seleção
 
