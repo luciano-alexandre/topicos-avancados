@@ -163,7 +163,7 @@ flowchart TD
 - [Anthropic — contagem de tokens em mensagens](https://docs.anthropic.com/en/api/messages-count-tokens);
 - [Google Gemini — compreensão e contagem de tokens](https://ai.google.dev/gemini-api/docs/tokens);
 - [Google Gemini — criação e segurança de chaves](https://ai.google.dev/gemini-api/docs/api-key);
-- [Claude — autenticação e expiração de chaves](https://platform.claude.com/docs/en/manage-claude/authentication);
+- [Google Gemini — modelos e limites do nível gratuito](https://ai.google.dev/gemini-api/docs/pricing);
 - [Hugging Face Transformers — tokenizer da família Llama](https://huggingface.co/docs/transformers/model_doc/llama);
 - [Mistral — aprofundamento sobre tokenização](https://docs.mistral.ai/resources/cookbooks/concept-deep-dive-tokenization-readme);
 - [Qwen — model card e descrição do tokenizer](https://huggingface.co/Qwen/Qwen-7B);
@@ -171,13 +171,13 @@ flowchart TD
 
 ### Atividade prática
 
-Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e
-escolher Gemini **ou** Claude no Passo 2.
+Esta atividade é **individual**. Cada estudante deve executar o Passo 1 com dois
+modelos locais e o Passo 2 com a API do Gemini.
 
 #### Tabela de preenchimento
 
 Preencha uma linha para cada um dos dois modelos locais do Passo 1 e uma linha
-para a API escolhida no Passo 2.
+para a API do Gemini utilizada no Passo 2.
 
 | Modelo e versão | Ferramenta ou rota | Medição inicial | Medição completa | Diferença | Evidência técnica |
 |---|---|---:|---:|---:|---|
@@ -203,11 +203,6 @@ O significado de cada coluna é:
 - **Evidência técnica:** para execução local, registre a classe e a revisão do
   tokenizer; para API, registre a data, a rota e o nome exato do modelo. Nunca
   registre a chave de API.
-
-A antiga coluna **Tokens visíveis** foi retirada porque não representava uma
-medição comparável: os modelos locais expõem IDs e fragmentos, enquanto as APIs
-normalmente retornam apenas totais. Os tokens locais ainda devem ser observados
-e comentados nas respostas finais, mas não precisam ocupar uma coluna binária.
 
 Use exatamente a mesma entrada em três modelos disponíveis:
 
@@ -319,24 +314,24 @@ python3 comparar_tokenizadores.py
 Copie os resultados para a tabela da atividade.
 
 
-#### Passo 2 — contagem por API com Gemini ou Claude
+#### Passo 2 — contagem pela API do Gemini
 
-Neste passo, a API retorna a contagem, mas normalmente não revela os IDs ou
-fragmentos individuais. Escolha apenas uma das alternativas abaixo e utilize
-uma chave criada em sua própria conta.
+Neste passo, a API do Gemini retorna a contagem, mas normalmente não revela os
+IDs ou fragmentos individuais. Utilize uma chave criada em sua própria conta e
+mantenha o projeto no nível gratuito.
 
 ##### Chave pessoal e temporária
 
 Uma chave de API não é a senha da conta, mas deve receber a mesma proteção. Ela
-pode consumir a cota e, quando houver faturamento ativado, gerar cobranças. A
-assinatura de um produto de chat não deve ser considerada automaticamente como
-crédito da API: são serviços e formas de cobrança distintos.
+pode consumir a cota do projeto. O nível gratuito do Gemini permite realizar
+esta atividade sem comprar créditos, desde que o modelo selecionado esteja
+disponível gratuitamente e a cota da conta não tenha sido esgotada. Não ative
+faturamento para executar a atividade.
 
 Para esta atividade, “temporária” significa:
 
-- no Claude, criar a chave com expiração curta, preferencialmente **3 horas**;
-- no Gemini, criar uma chave exclusiva para a aula e excluí-la ou revogá-la
-  imediatamente após terminar, pois a chave não recebe necessariamente uma
+- criar no Gemini uma chave exclusiva para a aula e excluí-la ou revogá-la
+  imediatamente após terminar, pois ela não recebe necessariamente uma
   expiração curta automática;
 - não reutilizar uma chave de projeto pessoal importante;
 - conferir cota e faturamento antes de executar a requisição. O estudante não
@@ -351,8 +346,6 @@ administrador**:
 
 ```bash
 export GEMINI_API_KEY="sua-chave"
-# ou
-export ANTHROPIC_API_KEY="sua-chave"
 ```
 
 Não altere `/etc/environment`, variáveis do sistema nem arquivos como `.bashrc`
@@ -370,7 +363,7 @@ histórico do shell. Em computador compartilhado, execute apenas uma chave curta
 e descartável, não faça captura de tela, não salve o comando e revogue a chave
 ao final da aula.
 
-##### Alternativa 2A — Gemini
+##### 2.1 Criar uma chave gratuita do Gemini
 
 **Método e rota:**
 
@@ -386,8 +379,14 @@ POST https://generativelanguage.googleapis.com/v1beta/models/{modelo}:countToken
 3. Clique em **Create API key**, copie a nova chave e mantenha a página aberta
    para poder excluí-la ao final. As chaves novas criadas no AI Studio são do
    tipo de autorização adotado atualmente pelo Gemini.
-4. Verifique na própria página se o projeto está no plano gratuito ou se possui
-   faturamento. Não habilite faturamento sem decisão pessoal consciente.
+4. Confirme na coluna de plano ou faturamento que o projeto está no nível
+   **Free**. Não clique em **Set up billing** e não vincule uma conta de cobrança.
+   Se o modelo do exemplo não estiver incluído no nível gratuito da conta,
+   selecione na página de preços outro modelo gratuito compatível com
+   `countTokens`.
+
+##### 2.2 Configurar a chave e o modelo
+
 5. No terminal, armazene a chave e o modelo em variáveis de ambiente. O modelo
    do exemplo deve ser confirmado na documentação antes da aula.
 
@@ -395,6 +394,8 @@ POST https://generativelanguage.googleapis.com/v1beta/models/{modelo}:countToken
 export GEMINI_API_KEY="cole-sua-chave-temporaria"
 export GEMINI_MODEL="gemini-3.6-flash"
 ```
+
+##### 2.3 Contar a mensagem simples
 
 6. Faça a contagem da mensagem simples:
 
@@ -414,6 +415,9 @@ curl -sS -X POST \
 ```
 
 7. Localize `totalTokens` na resposta e registre-o como `T_base`.
+
+##### 2.4 Contar a entrada completa
+
 8. Repita a chamada acrescentando uma instrução de sistema, o que representa
    uma entrada mais completa:
 
@@ -458,101 +462,19 @@ curl -sS -X POST \
   }'
 ```
 
-##### Alternativa 2B — Claude
-
-**Método e rota:**
-
-```text
-POST https://api.anthropic.com/v1/messages/count_tokens
-```
-
-1. Entre no [Claude Console](https://platform.claude.com/) com sua conta pessoal.
-   O acesso ao `claude.ai` ou uma assinatura de chat não garante créditos de API.
-2. Confira em **Settings → Billing** se a conta possui crédito disponível. A
-   alternativa Claude pode exigir créditos pagos; se não houver crédito e você
-   não desejar comprá-lo, utilize a alternativa Gemini.
-3. Abra **Settings → API keys** e escolha **Create key**.
-4. Dê um nome como `atividade-tokenizacao`, selecione expiração de **3 horas**,
-   crie e copie a chave. A expiração é escolhida na criação e não pode ser
-   alterada depois.
-5. Defina as variáveis de ambiente e confirme o modelo disponível no Console:
-
-```bash
-export ANTHROPIC_API_KEY="cole-sua-chave-temporaria"
-export CLAUDE_MODEL="claude-opus-4-6"
-```
-
-6. Conte a mensagem simples:
-
-```bash
-curl -sS -X POST \
-  "https://api.anthropic.com/v1/messages/count_tokens" \
-  -H "x-api-key: ${ANTHROPIC_API_KEY}" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{
-    "model": "'"${CLAUDE_MODEL}"'",
-    "messages": [{
-      "role": "user",
-      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
-    }]
-  }'
-```
-
-7. Localize `input_tokens` e registre-o como `T_base`.
-8. Repita a chamada acrescentando a instrução de sistema:
-
-```bash
-curl -sS -X POST \
-  "https://api.anthropic.com/v1/messages/count_tokens" \
-  -H "x-api-key: ${ANTHROPIC_API_KEY}" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{
-    "model": "'"${CLAUDE_MODEL}"'",
-    "system": "Responda em português e em uma frase.",
-    "messages": [{
-      "role": "user",
-      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
-    }]
-  }'
-```
-
-9. Registre o novo `input_tokens` como `T_completa` e calcule
-   `delta_API = T_completa - T_base`.
-10. Mesmo com expiração curta, arquive ou revogue a chave no Console ao terminar
-    e feche o terminal.
-
-Sem variável de ambiente, a chamada simples pode ser feita assim:
-
-```bash
-curl -sS -X POST \
-  "https://api.anthropic.com/v1/messages/count_tokens" \
-  -H "x-api-key: COLE_SUA_CHAVE_TEMPORARIA" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{
-    "model": "claude-opus-4-6",
-    "messages": [{
-      "role": "user",
-      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
-    }]
-  }'
-```
-
-##### 2.3 Interpretar corretamente a medição da API
+##### 2.5 Interpretar corretamente a medição da API
 
 `delta_API` mede a diferença entre duas requisições processadas pelo mesmo
 serviço. Ele inclui a instrução acrescentada e qualquer representação associada;
 portanto, não é igual ao overhead isolado do chat template calculado no Passo 1.
-Em Claude e Gemini, não preencha `T_texto` com uma estimativa de outro
-tokenizador. Quando o provedor não expuser essa medição, escreva “não exposto”.
+No Gemini, não preencha `T_texto` com uma estimativa de outro tokenizador. Como
+o endpoint não expõe essa medição isolada, escreva “não exposto”.
 
 As chaves nunca devem ser inseridas na tabela, no código versionado, em capturas
 de tela ou no relatório. A chave escrita diretamente no comando é apenas uma
 contingência para a sessão de laboratório e deve ser revogada imediatamente.
 
-#### Interpretação orientada
+#### Interpretação
 
 Ao final, cada estudante deve responder individualmente:
 
@@ -562,7 +484,3 @@ Ao final, cada estudante deve responder individualmente:
 4. Por que o resultado não permite concluir qual modelo é “melhor”?
 5. O que mudaria ao adicionar uma instrução de sistema e uma segunda mensagem?
 6. Quais resultados vieram do tokenizer local e quais vieram da API oficial?
-
-Não compare custos usando apenas a quantidade de palavras. Também não utilize o
-tokenizador de uma família para estimar outra quando a API disponibilizar a
-contagem oficial.
