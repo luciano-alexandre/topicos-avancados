@@ -169,11 +169,8 @@ flowchart TD
 
 ### Atividade prática
 
-Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e,
-conforme a credencial disponibilizada pelo professor, escolher Gemini **ou**
-Claude no Passo 2. Não é necessário pagar ou criar uma conta pessoal: se não
-houver credencial institucional, o professor pode fornecer a resposta JSON
-previamente obtida para que o estudante faça a análise.
+Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e, escolher Gemini **ou**
+Claude no Passo 2. 
 
 Use exatamente a mesma entrada em três modelos disponíveis:
 
