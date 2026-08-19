@@ -1,17 +1,17 @@
-# Encontro 03 — LLMs, tokens, contexto, inferência e limitações
+# Encontro 03 — LLMs, treinamento, inferência e tokenização
 
 ## Tema
 
-Funcionamento conceitual dos modelos de linguagem e relação entre tokenização,
-janela de contexto, inferência, parâmetros e qualidade das respostas.
+Funcionamento conceitual dos modelos de linguagem, geração token a token e
+comparação prática entre tokenizadores locais e APIs de contagem.
 
 ## Objetivos
 
 - Explicar, em nível conceitual, treinamento e inferência de um LLM.
-- Compreender tokenização e janela de contexto.
-- Relacionar parâmetros de geração à variabilidade das respostas.
-- Identificar alucinações e outras limitações.
-- Planejar um experimento simples e reproduzível com um modelo.
+- Compreender tokenização e tokens especiais de um template de conversa.
+- Comparar contagens produzidas por modelos e métodos diferentes.
+- Consumir com segurança um endpoint oficial de contagem de tokens.
+- Registrar uma atividade individual de modo reproduzível.
 
 ## Visão geral
 
@@ -162,6 +162,8 @@ flowchart TD
 - [OpenAI Tokenizer e biblioteca tiktoken](https://platform.openai.com/tokenizer/);
 - [Anthropic — contagem de tokens em mensagens](https://docs.anthropic.com/en/api/messages-count-tokens);
 - [Google Gemini — compreensão e contagem de tokens](https://ai.google.dev/gemini-api/docs/tokens);
+- [Google Gemini — criação e segurança de chaves](https://ai.google.dev/gemini-api/docs/api-key);
+- [Claude — autenticação e expiração de chaves](https://platform.claude.com/docs/en/manage-claude/authentication);
 - [Hugging Face Transformers — tokenizer da família Llama](https://huggingface.co/docs/transformers/model_doc/llama);
 - [Mistral — aprofundamento sobre tokenização](https://docs.mistral.ai/resources/cookbooks/concept-deep-dive-tokenization-readme);
 - [Qwen — model card e descrição do tokenizer](https://huggingface.co/Qwen/Qwen-7B);
@@ -169,20 +171,49 @@ flowchart TD
 
 ### Atividade prática
 
-Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e, escolher Gemini **ou**
-Claude no Passo 2. 
+Esta atividade é **individual**. Cada estudante deve executar o Passo 1 e
+escolher Gemini **ou** Claude no Passo 2.
+
+#### Tabela de preenchimento
+
+Preencha uma linha para cada um dos dois modelos locais do Passo 1 e uma linha
+para a API escolhida no Passo 2.
+
+| Modelo e versão | Ferramenta ou rota | Medição inicial | Medição completa | Diferença | Evidência técnica |
+|---|---|---:|---:|---:|---|
+| | | | | | local |
+| | | | | | local |
+| | | | | | API |
+
+O significado de cada coluna é:
+
+- **Modelo e versão:** identificador completo utilizado, e não apenas o nome da
+  empresa ou da família; por exemplo, `Qwen/Qwen2.5-0.5B-Instruct`.
+- **Ferramenta ou rota:** classe/biblioteca do tokenizador local ou endpoint
+  oficial utilizado para obter a contagem.
+- **Medição inicial:** no Passo 1, corresponde a `T_texto`, sem template e sem
+  tokens especiais; no Passo 2, corresponde a `T_base`, retornado pela API para
+  a mensagem simples.
+- **Medição completa:** no Passo 1, corresponde a `T_mensagem`, depois da
+  aplicação do chat template; no Passo 2, corresponde a `T_completa`, depois de
+  acrescentar a instrução de sistema.
+- **Diferença:** no Passo 1, `overhead = T_mensagem - T_texto`; no Passo 2,
+  `delta_API = T_completa - T_base`. Os dois valores não medem exatamente a
+  mesma coisa e não devem ser comparados como equivalentes.
+- **Evidência técnica:** para execução local, registre a classe e a revisão do
+  tokenizer; para API, registre a data, a rota e o nome exato do modelo. Nunca
+  registre a chave de API.
+
+A antiga coluna **Tokens visíveis** foi retirada porque não representava uma
+medição comparável: os modelos locais expõem IDs e fragmentos, enquanto as APIs
+normalmente retornam apenas totais. Os tokens locais ainda devem ser observados
+e comentados nas respostas finais, mas não precisam ocupar uma coluna binária.
 
 Use exatamente a mesma entrada em três modelos disponíveis:
 
 ```text
 Programação, aplicações Web e IA: custo, segurança e explicabilidade.
 ```
-
-Para cada modelo local, registre o identificador completo, a ferramenta de
-contagem, os tokens visíveis, o total do texto isolado e o total da mensagem
-completa. Para a API escolhida, registre os totais das requisições base e
-completa. Os cálculos e suas diferenças de interpretação são apresentados nos
-passos seguintes.
 
 #### O que será medido
 
@@ -285,32 +316,59 @@ for modelo in MODELOS:
 python3 comparar_tokenizadores.py
 ```
 
-Copie os resultados para a tabela da atividade. Se houver erro de acesso a um
-checkpoint, registre a mensagem e substitua somente esse identificador por uma
-variante pública *Instruct/Chat*. Não baixe executáveis oferecidos por páginas
-não oficiais e não use `trust_remote_code=True` sem autorização do professor.
+Copie os resultados para a tabela da atividade.
 
-##### 1.6 Interpretar os tokens
-
-`convert_ids_to_tokens()` apresenta a representação interna dos tokens. Marcas
-como `▁`, `Ġ`, escapes ou fragmentos de bytes não são erros: elas representam
-espaços, limites ou bytes conforme o tokenizador. Para observar exatamente o
-texto que cada ID recompõe, pode-se executar:
-
-```python
-for token_id in ids_texto:
-    print(token_id, repr(tokenizer.decode([token_id])))
-```
-
-Se `apply_chat_template()` informar que o checkpoint não possui template, o
-estudante deve escolher uma variante *Instruct/Chat* documentada. Não deve
-inventar um template, pois isso invalidaria a comparação.
 
 #### Passo 2 — contagem por API com Gemini ou Claude
 
-Neste passo, a API geralmente retorna a contagem, mas não os IDs ou fragmentos
-individuais. Portanto, registre “não” em **Tokens visíveis**. Escolha apenas uma
-das alternativas abaixo.
+Neste passo, a API retorna a contagem, mas normalmente não revela os IDs ou
+fragmentos individuais. Escolha apenas uma das alternativas abaixo e utilize
+uma chave criada em sua própria conta.
+
+##### Chave pessoal e temporária
+
+Uma chave de API não é a senha da conta, mas deve receber a mesma proteção. Ela
+pode consumir a cota e, quando houver faturamento ativado, gerar cobranças. A
+assinatura de um produto de chat não deve ser considerada automaticamente como
+crédito da API: são serviços e formas de cobrança distintos.
+
+Para esta atividade, “temporária” significa:
+
+- no Claude, criar a chave com expiração curta, preferencialmente **3 horas**;
+- no Gemini, criar uma chave exclusiva para a aula e excluí-la ou revogá-la
+  imediatamente após terminar, pois a chave não recebe necessariamente uma
+  expiração curta automática;
+- não reutilizar uma chave de projeto pessoal importante;
+- conferir cota e faturamento antes de executar a requisição. O estudante não
+  deve ativar cobrança apenas para cumprir esta atividade.
+
+##### Variáveis de ambiente e computadores do laboratório
+
+Variáveis de ambiente evitam repetir a chave no comando e reduzem o risco de
+salvá-la acidentalmente no código. Um `export` feito no terminal vale somente
+para aquela sessão e, em condições normais, **não exige permissão de
+administrador**:
+
+```bash
+export GEMINI_API_KEY="sua-chave"
+# ou
+export ANTHROPIC_API_KEY="sua-chave"
+```
+
+Não altere `/etc/environment`, variáveis do sistema nem arquivos como `.bashrc`
+em computadores compartilhados. No laboratório, podem existir políticas que
+bloqueiam a gravação do perfil, a criação de ambiente virtual, a instalação de
+pacotes ou até a execução de `curl`. Se o `export` funcionar, prefira-o; basta
+fechar o terminal ao terminar. Se o terminal ou a rede estiverem bloqueados,
+registre o impedimento e realize a análise com uma resposta JSON fornecida no
+roteiro, sem tentar contornar a política do laboratório.
+
+Se não for possível ou desejável criar a variável, a chave pode ser informada
+diretamente no cabeçalho do comando, conforme os exemplos alternativos. Essa é
+uma solução menos segura: a chave fica visível na tela e pode permanecer no
+histórico do shell. Em computador compartilhado, execute apenas uma chave curta
+e descartável, não faça captura de tela, não salve o comando e revogue a chave
+ao final da aula.
 
 ##### Alternativa 2A — Gemini
 
@@ -320,16 +378,25 @@ das alternativas abaixo.
 POST https://generativelanguage.googleapis.com/v1beta/models/{modelo}:countTokens
 ```
 
-1. Receba a chave temporária conforme a orientação do professor.
-2. No terminal, armazene a chave e o modelo em variáveis de ambiente. O exemplo
-   de modelo deve ser confirmado na documentação antes da aula.
+1. Entre em [Google AI Studio](https://aistudio.google.com/) com sua conta
+   Google pessoal e aceite os termos, se solicitado.
+2. Abra **Dashboard → API Keys**. Para contas novas, o AI Studio pode criar um
+   projeto e uma chave padrão. Caso já utilize Google Cloud, importe um projeto
+   existente ou crie um projeto pessoal separado para a atividade.
+3. Clique em **Create API key**, copie a nova chave e mantenha a página aberta
+   para poder excluí-la ao final. As chaves novas criadas no AI Studio são do
+   tipo de autorização adotado atualmente pelo Gemini.
+4. Verifique na própria página se o projeto está no plano gratuito ou se possui
+   faturamento. Não habilite faturamento sem decisão pessoal consciente.
+5. No terminal, armazene a chave e o modelo em variáveis de ambiente. O modelo
+   do exemplo deve ser confirmado na documentação antes da aula.
 
 ```bash
-export GEMINI_API_KEY="chave-fornecida-pelo-professor"
+export GEMINI_API_KEY="cole-sua-chave-temporaria"
 export GEMINI_MODEL="gemini-3.6-flash"
 ```
 
-3. Faça a contagem da mensagem simples:
+6. Faça a contagem da mensagem simples:
 
 ```bash
 curl -sS -X POST \
@@ -346,8 +413,8 @@ curl -sS -X POST \
   }'
 ```
 
-4. Localize `totalTokens` na resposta e registre-o como `T_base`.
-5. Repita a chamada acrescentando uma instrução de sistema, o que representa
+7. Localize `totalTokens` na resposta e registre-o como `T_base`.
+8. Repita a chamada acrescentando uma instrução de sistema, o que representa
    uma entrada mais completa:
 
 ```bash
@@ -371,8 +438,25 @@ curl -sS -X POST \
   }'
 ```
 
-6. Registre o novo `totalTokens` como `T_completa` e calcule
+9. Registre o novo `totalTokens` como `T_completa` e calcule
    `delta_API = T_completa - T_base`.
+10. Exclua a chave na página **API Keys** do AI Studio e feche o terminal.
+
+Se não usar variável de ambiente, substitua `COLE_SUA_CHAVE_TEMPORARIA` somente
+durante a execução deste comando:
+
+```bash
+curl -sS -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:countTokens" \
+  -H "x-goog-api-key: COLE_SUA_CHAVE_TEMPORARIA" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [{"text": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."}]
+    }]
+  }'
+```
 
 ##### Alternativa 2B — Claude
 
@@ -382,15 +466,23 @@ curl -sS -X POST \
 POST https://api.anthropic.com/v1/messages/count_tokens
 ```
 
-1. Receba a chave temporária e confirme o modelo indicado pelo professor.
-2. Defina as variáveis de ambiente:
+1. Entre no [Claude Console](https://platform.claude.com/) com sua conta pessoal.
+   O acesso ao `claude.ai` ou uma assinatura de chat não garante créditos de API.
+2. Confira em **Settings → Billing** se a conta possui crédito disponível. A
+   alternativa Claude pode exigir créditos pagos; se não houver crédito e você
+   não desejar comprá-lo, utilize a alternativa Gemini.
+3. Abra **Settings → API keys** e escolha **Create key**.
+4. Dê um nome como `atividade-tokenizacao`, selecione expiração de **3 horas**,
+   crie e copie a chave. A expiração é escolhida na criação e não pode ser
+   alterada depois.
+5. Defina as variáveis de ambiente e confirme o modelo disponível no Console:
 
 ```bash
-export ANTHROPIC_API_KEY="chave-fornecida-pelo-professor"
+export ANTHROPIC_API_KEY="cole-sua-chave-temporaria"
 export CLAUDE_MODEL="claude-opus-4-6"
 ```
 
-3. Conte a mensagem simples:
+6. Conte a mensagem simples:
 
 ```bash
 curl -sS -X POST \
@@ -407,8 +499,8 @@ curl -sS -X POST \
   }'
 ```
 
-4. Localize `input_tokens` e registre-o como `T_base`.
-5. Repita a chamada acrescentando a instrução de sistema:
+7. Localize `input_tokens` e registre-o como `T_base`.
+8. Repita a chamada acrescentando a instrução de sistema:
 
 ```bash
 curl -sS -X POST \
@@ -426,8 +518,27 @@ curl -sS -X POST \
   }'
 ```
 
-6. Registre o novo `input_tokens` como `T_completa` e calcule
+9. Registre o novo `input_tokens` como `T_completa` e calcule
    `delta_API = T_completa - T_base`.
+10. Mesmo com expiração curta, arquive ou revogue a chave no Console ao terminar
+    e feche o terminal.
+
+Sem variável de ambiente, a chamada simples pode ser feita assim:
+
+```bash
+curl -sS -X POST \
+  "https://api.anthropic.com/v1/messages/count_tokens" \
+  -H "x-api-key: COLE_SUA_CHAVE_TEMPORARIA" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "claude-opus-4-6",
+    "messages": [{
+      "role": "user",
+      "content": "Programação, aplicações Web e IA: custo, segurança e explicabilidade."
+    }]
+  }'
+```
 
 ##### 2.3 Interpretar corretamente a medição da API
 
@@ -437,22 +548,9 @@ portanto, não é igual ao overhead isolado do chat template calculado no Passo 
 Em Claude e Gemini, não preencha `T_texto` com uma estimativa de outro
 tokenizador. Quando o provedor não expuser essa medição, escreva “não exposto”.
 
-As chaves devem permanecer em variáveis de ambiente e nunca ser inseridas na
-planilha, no código versionado, em capturas de tela ou no relatório. Uma única
-credencial demonstrativa controlada pelo professor é suficiente; a atividade
-não exige que cada aluno contrate uma API.
-
-#### Como preencher o registro
-
-| Modelo e versão | Ferramenta | Tokens visíveis | `T_texto` | `T_mensagem`/`T_base` | Overhead/`delta_API` | Método |
-|---|---|---|---:|---:|---:|---|
-| | | sim/não | | | | local |
-| | | sim/não | | | | local |
-| | | não | não exposto | | | API |
-
-Além da tabela, registre a data, a revisão do checkpoint ou versão da API, a
-frase exata e se `add_generation_prompt=True` foi usado. Sem essas informações,
-outra pessoa pode obter uma contagem diferente sem que isso indique erro.
+As chaves nunca devem ser inseridas na tabela, no código versionado, em capturas
+de tela ou no relatório. A chave escrita diretamente no comando é apenas uma
+contingência para a sessão de laboratório e deve ser revogada imediatamente.
 
 #### Interpretação orientada
 
@@ -468,277 +566,3 @@ Ao final, cada estudante deve responder individualmente:
 Não compare custos usando apenas a quantidade de palavras. Também não utilize o
 tokenizador de uma família para estimar outra quando a API disponibilizar a
 contagem oficial.
-
-### Por que tokens importam?
-
-- definem o tamanho efetivo da entrada;
-- ocupam espaço na janela de contexto;
-- influenciam memória, latência e custo computacional;
-- limitam o tamanho máximo da resposta;
-- afetam estratégias de chunking e RAG.
-
-### Atividade de estimativa
-
-Compare três entradas: um parágrafo em português, um trecho de código e uma
-tabela JSON. Antes de usar um tokenizador, estime qual entrada utilizará mais
-tokens. Depois, confronte as estimativas com uma ferramenta compatível com o
-modelo escolhido.
-
-O objetivo não é decorar uma proporção, mas perceber que idioma, símbolos,
-formatação e tokenizador alteram o resultado.
-
-## Janela de contexto
-
-A janela de contexto é a quantidade máxima de tokens que o modelo consegue
-considerar em uma inferência. Ela pode incluir:
-
-- instrução de sistema;
-- mensagem atual do usuário;
-- histórico da conversa;
-- exemplos few-shot;
-- documentos recuperados;
-- descrições e resultados de ferramentas;
-- tokens da resposta, conforme a API e o modelo.
-
-A **instrução de sistema**, frequentemente chamada de `system prompt`, define o
-papel e as regras gerais que devem orientar o modelo. **Exemplos few-shot** são
-pares de entrada e saída incluídos no contexto para demonstrar o comportamento
-esperado antes da solicitação real.
-
-```mermaid
-flowchart LR
-    S[System prompt] --> J[Janela de contexto]
-    H[Histórico] --> J
-    E[Exemplos] --> J
-    D[Documentos] --> J
-    U[Pedido atual] --> J
-    J --> O[Resposta]
-```
-
-### Janela maior resolve tudo?
-
-Não. Um contexto maior pode elevar consumo de memória e latência e inserir
-conteúdo irrelevante ou conflitante. A aplicação deve selecionar o que realmente
-ajuda a tarefa.
-
-### Exemplo de orçamento
-
-Suponha que uma aplicação estabeleça um orçamento conceitual de contexto:
-
-| Parte | Reserva |
-|---|---:|
-| instruções e contrato | 15% |
-| pergunta e histórico recente | 20% |
-| documentos recuperados | 50% |
-| margem para resposta | 15% |
-
-Os percentuais não são universais. Eles tornam explícita a necessidade de
-controlar o contexto em vez de enviar todo o conteúdo disponível.
-
-```mermaid
-pie showData
-    title Exemplo de orçamento da janela de contexto
-    "Instruções e contrato" : 15
-    "Pergunta e histórico" : 20
-    "Documentos recuperados" : 50
-    "Margem para resposta" : 15
-```
-
-## Como o próximo token é escolhido
-
-O modelo produz probabilidades para possíveis continuações. A estratégia de
-decodificação decide como selecionar o próximo token.
-
-### Temperatura
-
-Controla, de modo geral, a dispersão da distribuição:
-
-- valores menores tendem a favorecer saídas mais previsíveis;
-- valores maiores tendem a aumentar diversidade e risco de variação;
-- temperatura baixa não garante verdade nem determinismo absoluto.
-
-### Top-k e top-p
-
-- `top-k` restringe a seleção a um número de candidatos mais prováveis;
-- `top-p` restringe a um conjunto cuja probabilidade acumulada atinge um limite;
-- a disponibilidade e a interpretação exata dependem do servidor e do modelo.
-
-```mermaid
-flowchart LR
-    L[Logits] --> P[Probabilidades]
-    P --> K[Filtro top-k]
-    P --> N[Filtro top-p]
-    K --> T[Temperatura e amostragem]
-    N --> T
-    T --> O[Próximo token]
-```
-
-### Seed
-
-Algumas ferramentas aceitam uma semente para facilitar reprodução. Mesmo assim,
-mudanças de versão, hardware, biblioteca ou configuração podem alterar o
-resultado.
-
-## Determinismo e variabilidade
-
-Software tradicional costuma produzir a mesma saída para a mesma entrada e o
-mesmo estado. Sistemas generativos podem variar.
-
-```ts
-function calcularMedia(a: number, b: number): number {
-  return (a + b) / 2;
-}
-```
-
-Para a mesma entrada, a função possui resultado definido. Já o pedido “explique
-este conceito de modo simples” admite muitas respostas aceitáveis.
-
-Isso afeta testes: nem sempre se deve comparar a resposta inteira com uma string
-fixa. Pode ser melhor validar schema, presença de fatos, fontes, critérios de uma
-rubrica ou métricas de qualidade.
-
-Um **schema** é uma descrição formal da estrutura esperada para os dados. Em uma
-resposta JSON, pode definir campos obrigatórios, tipos e valores permitidos,
-possibilitando que o backend rejeite uma saída incompatível.
-
-## Alucinação
-
-Alucinação é a produção de conteúdo incorreto, não sustentado ou inventado, que
-pode ser apresentado com fluência e confiança aparentes.
-
-### Por que acontece?
-
-O objetivo básico do modelo é gerar uma continuação plausível, não consultar
-automaticamente a verdade. Contexto insuficiente, pergunta ambígua e padrões
-aprendidos podem resultar em uma resposta plausível, porém falsa.
-
-### Estratégias de redução
-
-- fornecer contexto relevante e delimitado;
-- exigir indicação das fontes utilizadas;
-- permitir que o modelo declare insuficiência de informação;
-- usar saída estruturada e validação;
-- consultar ferramentas ou base de conhecimento;
-- verificar fatos críticos com fonte independente;
-- manter revisão humana em decisões importantes.
-
-Nenhuma estratégia elimina completamente o problema.
-
-```mermaid
-flowchart LR
-    Q[Pergunta] --> C{Contexto suficiente?}
-    C -->|não| N[Declarar insuficiência]
-    C -->|sim| G[Gerar resposta]
-    G --> V{Schema e evidências válidos?}
-    V -->|não| R[Rejeitar ou revisar]
-    V -->|sim| H{Decisão crítica?}
-    H -->|sim| U[Revisão humana]
-    H -->|não| S[Entregar resposta]
-    U --> S
-```
-
-## Outras limitações
-
-### Conhecimento desatualizado ou ausente
-
-O modelo pode não conhecer eventos recentes, dados privados ou regras locais.
-
-### Sensibilidade à formulação
-
-Pequenas alterações na instrução ou ordem do contexto podem mudar a resposta.
-
-### Viés
-
-Dados e escolhas do desenvolvimento podem reproduzir ou ampliar vieses.
-
-### Falta de causalidade e compreensão garantida
-
-Uma explicação coerente não prova que o modelo raciocinou como uma pessoa ou
-compreendeu o domínio da maneira esperada.
-
-### Prompt injection
-
-Conteúdo recebido como dado pode tentar alterar instruções ou induzir o sistema
-a revelar informação e usar ferramentas indevidamente.
-
-## Modelos multimodais
-
-Modelos multimodais recebem ou produzem mais de um tipo de informação, como
-texto, imagem e áudio. A integração exige considerar:
-
-- formatos e tamanho dos arquivos;
-- custo de processamento;
-- acessibilidade;
-- dados pessoais presentes em imagem ou voz;
-- validação específica para cada modalidade.
-
-## Experimento guiado: variabilidade e contexto
-
-Utilize um modelo disponível no ambiente e registre nome, versão, parâmetros e
-data.
-
-### Parte A — repetição
-
-Execute três vezes:
-
-```text
-Explique em até quatro frases por que uma aplicação deve validar a saída de um
-modelo de linguagem.
-```
-
-Compare vocabulário, argumentos, tamanho e consistência.
-
-### Parte B — mudança de parâmetro
-
-Repita com duas configurações de temperatura. Não altere outros elementos.
-
-### Parte C — contexto insuficiente
-
-Pergunte sobre uma regra fictícia da “Política Acadêmica Zeta”. Observe se o
-modelo pede informações ou inventa uma resposta. Depois forneça um pequeno
-trecho delimitado e solicite resposta apenas com base nele.
-
-### Tabela de registro
-
-| Execução | Configuração | Evidência usada | Variação | Erro ou limitação |
-|---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-
-### Discussão
-
-- Qual aspecto variou mais?
-- Temperatura menor tornou a resposta correta ou apenas mais estável?
-- O modelo admitiu não conhecer a política fictícia?
-- Que validação seria possível no backend?
-
-## Questões para revisão
-
-1. Qual a diferença entre treinamento e inferência?
-2. Por que palavra e token não são sinônimos?
-3. O que disputa espaço na janela de contexto?
-4. Por que mais contexto pode piorar uma resposta?
-5. Como a variabilidade modifica a estratégia de testes?
-6. Cite três medidas para reduzir alucinações.
-
-## Checklist de aprendizagem
-
-- [ ] explicar a geração token a token;
-- [ ] diferenciar treinamento e inferência;
-- [ ] explicar tokenização e janela de contexto;
-- [ ] relacionar parâmetros à variabilidade;
-- [ ] identificar alucinação sem confundi-la com simples erro de formatação;
-- [ ] registrar um experimento de modo reproduzível.
-
-## Síntese do encontro
-
-LLMs geram sequências probabilisticamente dentro de uma janela limitada. Essa
-natureza explica capacidades, variabilidade e parte das limitações. Uma boa
-integração não oculta essa característica: ela cria controles para utilizá-la
-de forma adequada ao problema.
-
-## Preparação para o próximo encontro
-
-Selecionar dois model cards de modelos abertos e identificar, em cada um:
-licença, finalidade, tamanho, idiomas, limitações declaradas e forma de uso.

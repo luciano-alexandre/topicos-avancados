@@ -1,12 +1,15 @@
-# Encontro 04 — Modelos abertos, famílias, licenças e model cards
+# Encontro 04 — Contexto, geração, limitações e seleção de modelos
 
 ## Tema
 
-Ecossistema de modelos de linguagem abertos e leitura crítica da documentação
-necessária para seleção e uso responsável.
+Janela de contexto, parâmetros de geração, variabilidade e limitações dos LLMs,
+articulados à seleção responsável de modelos, licenças e model cards.
 
 ## Objetivos
 
+- Explicar o que ocupa a janela de contexto e como administrar seu orçamento.
+- Relacionar temperatura, top-k e top-p à variabilidade das respostas.
+- Identificar alucinação, vieses e outras limitações relevantes.
 - Diferenciar pesos abertos, código aberto, API pública e modelo proprietário.
 - Reconhecer famílias, variantes e modelos especializados.
 - Ler model cards e identificar evidências relevantes.
@@ -17,14 +20,19 @@ necessária para seleção e uso responsável.
 
 | Etapa | Tempo | Estratégia |
 |---|---:|---|
-| retomada | 10 min | conexão entre pesos, inferência e requisitos |
-| exposição visual | 20 min | graus de abertura, famílias e variantes |
-| leitura guiada | 15 min | anatomia de um model card |
-| análise crítica | 15 min | licenças, benchmarks e lacunas |
-| oficina comparativa | 25 min | aplicação da ficha a dois candidatos |
+| retomada | 5 min | resultados da atividade de tokenização |
+| contexto e geração | 20 min | janela, orçamento e parâmetros de decodificação |
+| limitações | 15 min | variabilidade, alucinação, vieses e multimodalidade |
+| ecossistema | 15 min | abertura, famílias, variantes e licenças |
+| leitura guiada | 15 min | anatomia de um model card e benchmarks |
+| oficina comparativa | 15 min | aplicação da ficha a dois candidatos |
 | síntese | 5 min | decisão provisória baseada em evidências |
 
 ## Visão geral
+
+O resultado da tokenização estudada no Encontro 03 é apenas uma parte do
+comportamento operacional. O contexto disponível, os parâmetros de geração e as
+limitações do modelo também influenciam qualidade, latência e segurança.
 
 Escolher um modelo porque ele é popular ou ocupa boa posição em um ranking não
 é suficiente. A seleção precisa considerar tarefa, idioma, licença, memória,
@@ -33,6 +41,259 @@ latência, formato de distribuição, qualidade, riscos e manutenção.
 Os catálogos mudam rapidamente. Por isso, o objetivo deste encontro não é
 decorar uma lista de modelos. É aprender um método de leitura e decisão que
 continue válido quando novas versões forem publicadas.
+
+## Contexto, geração e limitações
+
+### Por que tokens importam?
+
+- definem o tamanho efetivo da entrada;
+- ocupam espaço na janela de contexto;
+- influenciam memória, latência e custo computacional;
+- limitam o tamanho máximo da resposta;
+- afetam estratégias de chunking e RAG.
+
+### Atividade de estimativa
+
+Compare três entradas: um parágrafo em português, um trecho de código e uma
+tabela JSON. Antes de usar um tokenizador, estime qual entrada utilizará mais
+tokens. Depois, confronte as estimativas com uma ferramenta compatível com o
+modelo escolhido.
+
+O objetivo não é decorar uma proporção, mas perceber que idioma, símbolos,
+formatação e tokenizador alteram o resultado.
+
+## Janela de contexto
+
+A janela de contexto é a quantidade máxima de tokens que o modelo consegue
+considerar em uma inferência. Ela pode incluir:
+
+- instrução de sistema;
+- mensagem atual do usuário;
+- histórico da conversa;
+- exemplos few-shot;
+- documentos recuperados;
+- descrições e resultados de ferramentas;
+- tokens da resposta, conforme a API e o modelo.
+
+A **instrução de sistema**, frequentemente chamada de `system prompt`, define o
+papel e as regras gerais que devem orientar o modelo. **Exemplos few-shot** são
+pares de entrada e saída incluídos no contexto para demonstrar o comportamento
+esperado antes da solicitação real.
+
+```mermaid
+flowchart LR
+    S[System prompt] --> J[Janela de contexto]
+    H[Histórico] --> J
+    E[Exemplos] --> J
+    D[Documentos] --> J
+    U[Pedido atual] --> J
+    J --> O[Resposta]
+```
+
+### Janela maior resolve tudo?
+
+Não. Um contexto maior pode elevar consumo de memória e latência e inserir
+conteúdo irrelevante ou conflitante. A aplicação deve selecionar o que realmente
+ajuda a tarefa.
+
+### Exemplo de orçamento
+
+Suponha que uma aplicação estabeleça um orçamento conceitual de contexto:
+
+| Parte | Reserva |
+|---|---:|
+| instruções e contrato | 15% |
+| pergunta e histórico recente | 20% |
+| documentos recuperados | 50% |
+| margem para resposta | 15% |
+
+Os percentuais não são universais. Eles tornam explícita a necessidade de
+controlar o contexto em vez de enviar todo o conteúdo disponível.
+
+```mermaid
+pie showData
+    title Exemplo de orçamento da janela de contexto
+    "Instruções e contrato" : 15
+    "Pergunta e histórico" : 20
+    "Documentos recuperados" : 50
+    "Margem para resposta" : 15
+```
+
+## Como o próximo token é escolhido
+
+O modelo produz probabilidades para possíveis continuações. A estratégia de
+decodificação decide como selecionar o próximo token.
+
+### Temperatura
+
+Controla, de modo geral, a dispersão da distribuição:
+
+- valores menores tendem a favorecer saídas mais previsíveis;
+- valores maiores tendem a aumentar diversidade e risco de variação;
+- temperatura baixa não garante verdade nem determinismo absoluto.
+
+### Top-k e top-p
+
+- `top-k` restringe a seleção a um número de candidatos mais prováveis;
+- `top-p` restringe a um conjunto cuja probabilidade acumulada atinge um limite;
+- a disponibilidade e a interpretação exata dependem do servidor e do modelo.
+
+```mermaid
+flowchart LR
+    L[Logits] --> P[Probabilidades]
+    P --> K[Filtro top-k]
+    P --> N[Filtro top-p]
+    K --> T[Temperatura e amostragem]
+    N --> T
+    T --> O[Próximo token]
+```
+
+### Seed
+
+Algumas ferramentas aceitam uma semente para facilitar reprodução. Mesmo assim,
+mudanças de versão, hardware, biblioteca ou configuração podem alterar o
+resultado.
+
+## Determinismo e variabilidade
+
+Software tradicional costuma produzir a mesma saída para a mesma entrada e o
+mesmo estado. Sistemas generativos podem variar.
+
+```ts
+function calcularMedia(a: number, b: number): number {
+  return (a + b) / 2;
+}
+```
+
+Para a mesma entrada, a função possui resultado definido. Já o pedido “explique
+este conceito de modo simples” admite muitas respostas aceitáveis.
+
+Isso afeta testes: nem sempre se deve comparar a resposta inteira com uma string
+fixa. Pode ser melhor validar schema, presença de fatos, fontes, critérios de uma
+rubrica ou métricas de qualidade.
+
+Um **schema** é uma descrição formal da estrutura esperada para os dados. Em uma
+resposta JSON, pode definir campos obrigatórios, tipos e valores permitidos,
+possibilitando que o backend rejeite uma saída incompatível.
+
+## Alucinação
+
+Alucinação é a produção de conteúdo incorreto, não sustentado ou inventado, que
+pode ser apresentado com fluência e confiança aparentes.
+
+### Por que acontece?
+
+O objetivo básico do modelo é gerar uma continuação plausível, não consultar
+automaticamente a verdade. Contexto insuficiente, pergunta ambígua e padrões
+aprendidos podem resultar em uma resposta plausível, porém falsa.
+
+### Estratégias de redução
+
+- fornecer contexto relevante e delimitado;
+- exigir indicação das fontes utilizadas;
+- permitir que o modelo declare insuficiência de informação;
+- usar saída estruturada e validação;
+- consultar ferramentas ou base de conhecimento;
+- verificar fatos críticos com fonte independente;
+- manter revisão humana em decisões importantes.
+
+Nenhuma estratégia elimina completamente o problema.
+
+```mermaid
+flowchart LR
+    Q[Pergunta] --> C{Contexto suficiente?}
+    C -->|não| N[Declarar insuficiência]
+    C -->|sim| G[Gerar resposta]
+    G --> V{Schema e evidências válidos?}
+    V -->|não| R[Rejeitar ou revisar]
+    V -->|sim| H{Decisão crítica?}
+    H -->|sim| U[Revisão humana]
+    H -->|não| S[Entregar resposta]
+    U --> S
+```
+
+## Outras limitações
+
+### Conhecimento desatualizado ou ausente
+
+O modelo pode não conhecer eventos recentes, dados privados ou regras locais.
+
+### Sensibilidade à formulação
+
+Pequenas alterações na instrução ou ordem do contexto podem mudar a resposta.
+
+### Viés
+
+Dados e escolhas do desenvolvimento podem reproduzir ou ampliar vieses.
+
+### Falta de causalidade e compreensão garantida
+
+Uma explicação coerente não prova que o modelo raciocinou como uma pessoa ou
+compreendeu o domínio da maneira esperada.
+
+### Prompt injection
+
+Conteúdo recebido como dado pode tentar alterar instruções ou induzir o sistema
+a revelar informação e usar ferramentas indevidamente.
+
+## Modelos multimodais
+
+Modelos multimodais recebem ou produzem mais de um tipo de informação, como
+texto, imagem e áudio. A integração exige considerar:
+
+- formatos e tamanho dos arquivos;
+- custo de processamento;
+- acessibilidade;
+- dados pessoais presentes em imagem ou voz;
+- validação específica para cada modalidade.
+
+## Experimento guiado: variabilidade e contexto
+
+Utilize um modelo disponível no ambiente e registre nome, versão, parâmetros e
+data.
+
+### Parte A — repetição
+
+Execute três vezes:
+
+```text
+Explique em até quatro frases por que uma aplicação deve validar a saída de um
+modelo de linguagem.
+```
+
+Compare vocabulário, argumentos, tamanho e consistência.
+
+### Parte B — mudança de parâmetro
+
+Repita com duas configurações de temperatura. Não altere outros elementos.
+
+### Parte C — contexto insuficiente
+
+Pergunte sobre uma regra fictícia da “Política Acadêmica Zeta”. Observe se o
+modelo pede informações ou inventa uma resposta. Depois forneça um pequeno
+trecho delimitado e solicite resposta apenas com base nele.
+
+### Tabela de registro
+
+| Execução | Configuração | Evidência usada | Variação | Erro ou limitação |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+
+### Discussão
+
+- Qual aspecto variou mais?
+- Temperatura menor tornou a resposta correta ou apenas mais estável?
+- O modelo admitiu não conhecer a política fictícia?
+- Que validação seria possível no backend?
+
+
+## Da compreensão do comportamento à seleção
+
+Os conceitos anteriores oferecem critérios técnicos para comparar candidatos.
+A segunda parte do encontro amplia a análise para disponibilidade dos artefatos,
+licença, finalidade, evidências de avaliação e requisitos operacionais.
 
 ## Pergunta central
 
@@ -120,7 +381,7 @@ saúde ou um idioma. A especialização deve ser validada para o caso real.
 - modelo ajustado a instruções foi adaptado para responder a comandos;
 - uma aplicação de chat geralmente prefere uma variante preparada para instruções.
 
-### Modelos multimodais
+### Variações multimodais nas famílias
 
 Processam mais de uma modalidade. É necessário confirmar exatamente quais
 entradas e saídas a variante suporta; o nome de uma família não garante que
@@ -383,15 +644,19 @@ esteja autorizado.
 
 ## Questões para revisão
 
-1. Qual a diferença entre pesos abertos e código aberto?
-2. Por que código, pesos e dados podem possuir licenças distintas?
-3. O que diferencia um modelo base de um modelo ajustado a instruções?
-4. Quais informações mínimas devem constar em uma comparação?
-5. Por que avaliação local é necessária mesmo com bons benchmarks?
-6. Quais riscos permanecem na execução local?
+1. O que disputa espaço na janela de contexto?
+2. Por que temperatura menor não garante uma resposta verdadeira?
+3. Como alucinação e variabilidade afetam a validação da aplicação?
+4. Qual a diferença entre pesos abertos e código aberto?
+5. O que diferencia um modelo base de um modelo ajustado a instruções?
+6. Por que a avaliação local continua necessária mesmo com bons benchmarks?
+7. Quais evidências mínimas devem sustentar a seleção de um modelo?
 
 ## Checklist de aprendizagem
 
+- [ ] explicar o orçamento de uma janela de contexto;
+- [ ] relacionar parâmetros de geração à variabilidade;
+- [ ] identificar alucinação e outras limitações;
 - [ ] usar terminologia precisa ao falar de abertura;
 - [ ] localizar licença e versão de uma variante;
 - [ ] extrair informações essenciais de um model card;
@@ -401,10 +666,11 @@ esteja autorizado.
 
 ## Síntese do encontro
 
-Selecionar um modelo é uma decisão de engenharia e governança. Model cards,
-licenças e avaliações oferecem evidências, mas não dispensam experimentos com o
-domínio real. No próximo encontro, essa análise será conectada aos requisitos de
-hardware, quantização e desempenho.
+Compreender contexto, geração e limitações permite transformar características
+do modelo em critérios de seleção. Model cards, licenças e avaliações oferecem
+evidências, mas não dispensam experimentos com o domínio real. No próximo
+encontro, essa análise será conectada aos requisitos de hardware, quantização e
+desempenho.
 
 ## Preparação para o próximo encontro
 
