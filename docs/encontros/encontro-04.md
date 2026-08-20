@@ -151,8 +151,25 @@ pie showData
 
 ## Como o próximo token é escolhido
 
-O modelo produz probabilidades para possíveis continuações. A estratégia de
-decodificação decide como selecionar o próximo token.
+Antes de produzir cada token, o modelo atribui a cada token possível uma
+pontuação numérica chamada **logit**. O logit não é uma probabilidade nem uma
+porcentagem: é uma pontuação interna, que pode ser positiva ou negativa. Quanto
+maior o logit de um token em relação aos demais, maior será sua chance de ser
+escolhido.
+
+Por exemplo, depois de `A capital do Brasil é`, o modelo poderia atribuir
+pontuações hipotéticas como estas:
+
+| Token candidato | Logit hipotético | Interpretação |
+|---|---:|---|
+| `Brasília` | 8,2 | continuação fortemente favorecida |
+| `São` | 3,1 | continuação possível, mas menos favorecida |
+| `ontem` | -1,4 | continuação pouco compatível |
+
+Esses valores são apenas didáticos. Uma operação matemática, normalmente
+associada à função *softmax*, transforma o conjunto de logits em probabilidades
+cuja soma é 100%. Em seguida, a estratégia de decodificação filtra os candidatos
+e seleciona o próximo token. O processo recomeça após cada token gerado.
 
 ### Temperatura
 
@@ -170,13 +187,17 @@ Controla, de modo geral, a dispersão da distribuição:
 
 ```mermaid
 flowchart LR
-    L[Logits] --> P[Probabilidades]
-    P --> K[Filtro top-k]
-    P --> N[Filtro top-p]
-    K --> T[Temperatura e amostragem]
-    N --> T
-    T --> O[Próximo token]
+    C[Tokens candidatos] --> L[Logits<br/>pontuações internas do modelo]
+    L --> T[Temperatura<br/>ajusta o contraste entre as pontuações]
+    T --> S[Softmax<br/>converte pontuações em probabilidades]
+    S --> F[Filtros top-k e/ou top-p<br/>reduzem os candidatos]
+    F --> A[Amostragem ou escolha]
+    A --> O[Próximo token]
+    O --> R[O processo se repete]
 ```
+
+O diagrama apresenta uma visão conceitual. A ordem e a combinação exatas dessas
+operações podem variar conforme a implementação do servidor de inferência.
 
 ## Determinismo e variabilidade
 
