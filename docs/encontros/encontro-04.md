@@ -44,6 +44,72 @@ papel e as regras gerais que devem orientar o modelo. **Exemplos few-shot** são
 pares de entrada e saída incluídos no contexto para demonstrar o comportamento
 esperado antes da solicitação real.
 
+### O que são exemplos few-shot?
+
+`Few-shot` significa literalmente **poucos exemplos**. Em vez de apenas explicar
+uma tarefa, o prompt apresenta algumas demonstrações completas do que deve
+entrar e do que se espera como saída. O modelo usa esses exemplos como padrão
+temporário para responder à nova entrada; eles orientam a execução, mas não
+alteram nem treinam permanentemente o modelo.
+
+Compare três formas de solicitar a mesma tarefa:
+
+| Estratégia | O que o prompt fornece |
+|---|---|
+| **Zero-shot** | Apenas a instrução, sem exemplo. |
+| **One-shot** | A instrução e um único exemplo. |
+| **Few-shot** | A instrução e alguns exemplos, normalmente escolhidos para representar situações diferentes. |
+
+Por exemplo, uma aplicação precisa classificar mensagens de atendimento usando
+somente as categorias `FINANCEIRO`, `SUPORTE` e `CANCELAMENTO`. Um prompt
+few-shot poderia ser:
+
+```text
+Classifique a mensagem usando somente uma destas categorias:
+FINANCEIRO, SUPORTE ou CANCELAMENTO.
+
+Mensagem: "Minha cobrança veio duplicada."
+Categoria: FINANCEIRO
+
+Mensagem: "O aplicativo fecha quando tento entrar."
+Categoria: SUPORTE
+
+Mensagem: "Não quero mais utilizar o serviço."
+Categoria: CANCELAMENTO
+
+Mensagem: "Esqueci minha senha e não consigo acessar."
+Categoria:
+```
+
+Os três primeiros pares são as demonstrações. A última mensagem é a entrada
+real, para a qual se espera `SUPORTE`. Os exemplos mostram simultaneamente as
+categorias permitidas, o formato da resposta e a relação entre cada tipo de
+mensagem e sua classificação. Isso costuma ser mais concreto do que descrever
+todas essas regras apenas em linguagem natural.
+
+```mermaid
+flowchart LR
+    I[Instrução] --> C[Contexto do prompt]
+    E1[Exemplo 1<br/>entrada + saída] --> C
+    E2[Exemplo 2<br/>entrada + saída] --> C
+    E3[Exemplo 3<br/>entrada + saída] --> C
+    N[Nova entrada<br/>sem resposta] --> C
+    C --> R[Resposta seguindo<br/>o padrão demonstrado]
+```
+
+Exemplos few-shot são especialmente úteis para ensinar:
+
+- o formato exato da saída, como uma categoria ou estrutura JSON;
+- critérios de classificação difíceis de resumir em uma única regra;
+- tom, vocabulário ou nível de detalhamento desejado;
+- como tratar casos distintos ou situações de fronteira.
+
+Os exemplos precisam ser corretos, variados e coerentes com a instrução. Um
+exemplo errado ou ambíguo também pode ser imitado. Além disso, cada demonstração
+consome tokens da janela de contexto: acrescentar muitos exemplos pode aumentar
+custo e latência ou retirar espaço dos documentos e da resposta. Few-shot não
+garante precisão factual nem substitui validação da saída.
+
 ```mermaid
 flowchart LR
     S[System prompt] --> J[Janela de contexto]
