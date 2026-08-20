@@ -9,8 +9,8 @@ conteúdos seguintes foram antecipados em um encontro.
 | [01](encontros/encontro-01.md) | U1 | A disciplina e a IA na arquitetura Web |
 | [02](encontros/encontro-02.md) | U1 | Apresentação e discussão de todos os diagramas |
 | [03](encontros/encontro-03.md) | U1 | LLMs, treinamento, inferência e tokenização |
-| [04](encontros/encontro-04.md) | U1 | Contexto, geração, limitações e seleção de modelos |
-| [05](encontros/encontro-05.md) | U1 | Requisitos, quantização e seleção de modelos |
+| [04](encontros/encontro-04.md) | U1 | Contexto, geração e limitações dos LLMs |
+| [05](encontros/encontro-05.md) | U1 | Seleção, requisitos e quantização de modelos |
 | [06](encontros/encontro-06.md) | U1 | Ollama, API local e Docker |
 | [07](encontros/encontro-07.md) | U1 | NestJS consumindo inferência local |
 | [08](encontros/encontro-08.md) | U1 | Atividades práticas |
