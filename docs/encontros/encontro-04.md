@@ -187,17 +187,16 @@ Controla, de modo geral, a dispersão da distribuição:
 
 ```mermaid
 flowchart LR
-    C[Tokens candidatos] --> L[Logits<br/>pontuações internas do modelo]
-    L --> T[Temperatura<br/>ajusta o contraste entre as pontuações]
-    T --> S[Softmax<br/>converte pontuações em probabilidades]
-    S --> F[Filtros top-k e/ou top-p<br/>reduzem os candidatos]
-    F --> A[Amostragem ou escolha]
-    A --> O[Próximo token]
-    O --> R[O processo se repete]
+    A[1. O modelo analisa<br/>o texto atual] --> B[2. Dá uma nota<br/>a cada próximo token]
+    B --> C[3. Calcula as chances<br/>e reduz as opções]
+    C --> D[4. Escolhe<br/>o próximo token]
+    D -. repete o processo .-> A
 ```
 
-O diagrama apresenta uma visão conceitual. A ordem e a combinação exatas dessas
-operações podem variar conforme a implementação do servidor de inferência.
+Na etapa 2, as notas são os **logits**. Na etapa 3, temperatura, *softmax*,
+top-k e top-p podem transformar essas notas em probabilidades e limitar as
+opções. O diagrama apresenta apenas a ideia geral; a ordem e a combinação exatas
+das operações podem variar conforme a implementação.
 
 ## Determinismo e variabilidade
 
