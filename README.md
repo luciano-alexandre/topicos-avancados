@@ -4,15 +4,6 @@ Repositório da disciplina **Tópicos Avançados em Sistemas para Internet:
 Desenvolvimento de Software com Inteligência Artificial**, do curso de
 Tecnologia em Sistemas para Internet (TSI).
 
-## Estrutura do repositório
-
-- `docs/`: documentos acadêmicos, planejamento e roteiros dos encontros;
-- `unidades/`: organização pedagógica das duas unidades do semestre;
-- `aulas/`: modelo para preparação e condução das aulas;
-- `praticas/`: roteiros de laboratório e experimentação;
-- `atividades/`: orientações das atividades e do seminário;
-- `projetos/`: especificação e acompanhamento do projeto final.
-
 ## Carga horária e organização
 
 - Carga horária total: **60 horas-aula**;
@@ -26,8 +17,7 @@ Tecnologia em Sistemas para Internet (TSI).
 
 - [Visão geral da disciplina](docs/visao-geral-disciplina.md)
 - [Visão geral do professor](docs/visao-geral-professor.md)
-- [Plano de ensino](docs/plano-de-ensino.md)
-- [Cronograma semestral](docs/cronograma-semestral.md)
+- [Cronograma](docs/cronograma-semestral.md)
 - [Ementa e objetivos](docs/ementa-e-objetivos.md)
 - [Avaliação](docs/avaliacao.md)
 - [Referências](docs/referencias.md)
