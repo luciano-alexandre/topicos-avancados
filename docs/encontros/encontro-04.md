@@ -26,24 +26,6 @@ Escolher um modelo porque ele é popular ou ocupa boa posição em um ranking n�
 é suficiente. A seleção precisa considerar tarefa, idioma, licença, memória,
 latência, formato de distribuição, qualidade, riscos e manutenção.
 
-
-## Contexto, geração e limitações
-
-### Por que tokens importam?
-
-- definem o tamanho efetivo da entrada;
-- ocupam espaço na janela de contexto;
-- influenciam memória, latência e custo computacional;
-- limitam o tamanho máximo da resposta;
-- afetam estratégias de chunking e RAG.
-
-### Realizando uma estimativa
-
-Compare três entradas: um parágrafo em português, um trecho de código e uma
-tabela JSON. Antes de usar um tokenizador, estime qual entrada utilizará mais
-tokens. Depois, confronte as estimativas com uma ferramenta compatível com o
-modelo escolhido.
-
 ## Janela de contexto
 
 A janela de contexto é a quantidade máxima de tokens que o modelo consegue
