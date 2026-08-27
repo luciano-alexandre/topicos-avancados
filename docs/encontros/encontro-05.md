@@ -275,284 +275,422 @@ falhou.
 - [Documentação do Thunder Client](https://docs.thunderclient.com/)
 - [Ambientes no Thunder Client](https://docs.thunderclient.com/features/environments)
 
-## Atividade técnica — caracterização da API local de inferência
+## Atividade prática — página Web consumindo o Ollama
 
 ### Objetivo
 
-Tratar o Ollama como um serviço de infraestrutura e produzir uma caracterização
-técnica de seu contrato e comportamento. A atividade envolve parametrização
-das requisições no Thunder Client, comparação de execução fria e aquecida,
-cálculo de vazão, controle de contexto, streaming e testes negativos.
+Construir uma pequena página com HTML, CSS e JavaScript puro. O usuário digitará
+um prompt, o JavaScript enviará uma requisição para o Ollama executado no Docker
+e a resposta do modelo será apresentada na própria página.
 
-A atividade é individual e possui duração estimada de 35 a 45 minutos.
+```mermaid
+flowchart LR
+    U[Usuário] --> F[Formulário HTML]
+    F --> J[JavaScript com fetch]
+    J -->|POST /api/chat| O[Ollama no Docker]
+    O -->|JSON| J
+    J --> T[Resposta na página]
+```
 
-### Cenário
+A atividade é individual e possui duração estimada de 30 a 40 minutos.
 
-Você integra um servidor local de inferência a um backend. Antes de implementar
-o cliente NestJS, precisa responder com evidências:
+> **Importante:** a chamada direta do navegador ao Ollama é usada aqui para
+> compreender o fluxo HTTP. Em uma aplicação real, o frontend deve chamar um
+> backend responsável por autenticação, autorização, validação, limites e
+> proteção do servidor de inferência.
 
-- qual modelo está realmente disponível?
-- quais campos compõem o contrato de resposta?
-- qual é o impacto do carregamento inicial?
-- qual vazão aproximada foi observada?
-- como o histórico modifica a requisição?
-- como a API se comporta diante de entradas inválidas e indisponibilidade?
+### Resultado esperado
 
-## Preparação
+A página deverá possuir:
 
-Inicie o ambiente e confirme que apenas o Ollama fornece a inferência:
+- um campo para digitar o prompt;
+- um botão para enviar;
+- indicação de carregamento;
+- área para apresentar a resposta;
+- mensagem compreensível quando ocorrer um erro;
+- bloqueio de envios duplicados durante a geração.
+
+## Passo 1 — preparar a pasta
+
+Crie uma pasta chamada `ollama-web` e, dentro dela, estes arquivos:
+
+```text
+ollama-web/
+├── index.html
+├── styles.css
+└── app.js
+```
+
+Abra essa pasta no VS Code.
+
+## Passo 2 — permitir a origem da página
+
+Uma página servida em uma porta e o Ollama publicado em outra possuem origens
+diferentes. O navegador aplica a política de mesma origem e pode bloquear a
+requisição se o servidor não autorizar a origem da página.
+
+No serviço `ollama` do `compose.yaml`, adicione uma autorização restrita às
+origens que serão usadas pelo servidor local:
+
+```yaml
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_ORIGINS: "http://127.0.0.1:5500,http://localhost:5500"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:
+```
+
+Recrie o contêiner para aplicar a variável:
 
 ```bash
-docker compose up -d
+docker compose up -d --force-recreate
 docker compose ps
+```
+
+Não use `OLLAMA_ORIGINS=*`. Autorizar qualquer origem amplia
+desnecessariamente a superfície de acesso ao servidor.
+
+## Passo 3 — confirmar o modelo
+
+Liste os modelos dentro do contêiner:
+
+```bash
 docker compose exec ollama ollama list
 ```
 
-Se não houver modelo, obtenha o modelo indicado pelo professor:
+Se a lista estiver vazia, obtenha o modelo indicado pelo professor:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
 ```
 
-No Thunder Client, crie uma coleção chamada `Ollama local` e um ambiente ativo
-chamado `ollama-local`:
+Copie o identificador exato apresentado pelo comando `list`. Ele será usado no
+JavaScript.
 
-| Variável | Valor inicial |
-|---|---|
-| `baseUrl` | `http://localhost:11434` |
-| `model` | identificador exato retornado por `/api/tags` |
+## Passo 4 — criar o HTML
 
-Todas as requisições devem usar `{{baseUrl}}` e `{{model}}`. Não repita valores
-fixos em várias requisições.
+Em `index.html`, adicione:
 
-## Experimento 1 — descoberta e contrato
+```html
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cliente Web do Ollama</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Cliente Web do Ollama</h1>
+      <p>Digite uma pergunta para o modelo executado localmente.</p>
 
-Crie e salve:
+      <form id="prompt-form">
+        <label for="prompt">Prompt</label>
+        <textarea
+          id="prompt"
+          name="prompt"
+          rows="6"
+          maxlength="2000"
+          placeholder="Ex.: explique o que é uma API REST."
+          required
+        ></textarea>
 
-| Nome | Método | URL |
-|---|:---:|---|
-| `01 - Version` | `GET` | `{{baseUrl}}/api/version` |
-| `02 - Tags` | `GET` | `{{baseUrl}}/api/tags` |
-| `03 - Running models` | `GET` | `{{baseUrl}}/api/ps` |
+        <div class="actions">
+          <span id="counter">0/2000</span>
+          <button id="submit-button" type="submit">Enviar</button>
+        </div>
+      </form>
 
-Execute as três requisições. Em `Tags`, confirme que o modelo configurado no
-ambiente corresponde exatamente a um item de `models[].name`.
+      <p id="status" role="status" aria-live="polite"></p>
 
-Registre também quais campos aparecem em cada modelo. Diferencie:
+      <section aria-labelledby="response-title">
+        <h2 id="response-title">Resposta</h2>
+        <pre id="response">A resposta será exibida aqui.</pre>
+      </section>
+    </main>
 
-- identidade do artefato;
-- tamanho em bytes;
-- formato e família, quando informados;
-- precisão ou quantização, quando informada;
-- estado carregado ou apenas armazenado.
-
-Não presuma que um modelo listado em `/api/tags` já está carregado na memória.
-
-## Experimento 2 — execução fria e aquecida
-
-Crie `04 - Chat benchmark`:
-
-```http
-POST {{baseUrl}}/api/chat
-Content-Type: application/json
+    <script src="app.js"></script>
+  </body>
+</html>
 ```
 
-```json
-{
-  "model": "{{model}}",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Explique em exatamente quatro itens os riscos de acoplar uma aplicação ao contrato interno de um provedor de IA."
-    }
-  ],
-  "stream": false,
-  "keep_alive": "5m",
-  "options": {
-    "temperature": 0.2
+Elementos importantes:
+
+- o `form` permite enviar pelo botão ou pela tecla apropriada;
+- `required` impede o envio vazio no navegador;
+- `maxlength` cria um limite inicial de entrada;
+- `aria-live` anuncia mudanças de status a tecnologias assistivas;
+- `pre` preserva quebras de linha da resposta.
+
+## Passo 5 — adicionar o estilo
+
+Em `styles.css`, adicione:
+
+```css
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.container {
+  width: min(760px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+form,
+section {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #374151;
+  border-radius: 0.75rem;
+  background: #1f2937;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.75rem;
+  resize: vertical;
+  font: inherit;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+button {
+  padding: 0.65rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+#status[data-type="error"] {
+  color: #fca5a5;
+}
+
+#status[data-type="success"] {
+  color: #86efac;
+}
+
+#response {
+  min-height: 8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+```
+
+## Passo 6 — implementar a chamada em JavaScript
+
+Em `app.js`, adicione:
+
+```js
+const OLLAMA_URL = 'http://localhost:11434/api/chat';
+const OLLAMA_MODEL = 'llama3.2:latest';
+
+const form = document.querySelector('#prompt-form');
+const promptInput = document.querySelector('#prompt');
+const submitButton = document.querySelector('#submit-button');
+const statusElement = document.querySelector('#status');
+const responseElement = document.querySelector('#response');
+const counterElement = document.querySelector('#counter');
+
+promptInput.addEventListener('input', () => {
+  counterElement.textContent = `${promptInput.value.length}/2000`;
+});
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const prompt = promptInput.value.trim();
+  if (!prompt) {
+    showStatus('Digite um prompt antes de enviar.', 'error');
+    return;
   }
-}
-```
 
-Antes da primeira execução, descarregue o modelo:
+  setLoading(true);
+  showStatus('Gerando resposta...', 'loading');
+  responseElement.textContent = '';
 
-```bash
-docker compose exec ollama ollama stop llama3.2
-```
+  try {
+    const response = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        stream: false,
+      }),
+    });
 
-Substitua `llama3.2` pelo identificador usado no ambiente. Execute a requisição
-uma vez, aguarde a conclusão e execute novamente sem alterar o corpo.
-
-Preencha:
-
-| Métrica | Execução fria | Execução aquecida |
-|---|---:|---:|
-| status HTTP | | |
-| `load_duration` | | |
-| `prompt_eval_count` | | |
-| `prompt_eval_duration` | | |
-| `eval_count` | | |
-| `eval_duration` | | |
-| `total_duration` | | |
-| restrição de quatro itens atendida? | | |
-
-As durações do Ollama são informadas em nanossegundos. Calcule a vazão de saída:
-
-```text
-tokens por segundo = eval_count ÷ (eval_duration ÷ 1.000.000.000)
-```
-
-Registre o cálculo para as duas execuções. Não use o tempo mostrado pelo Thunder
-Client como substituto de `eval_duration`: o tempo do cliente também inclui
-rede, serialização e outras etapas.
-
-## Experimento 3 — contexto explícito
-
-Duplique a requisição e salve como `05 - Chat com histórico`. Use:
-
-```json
-{
-  "model": "{{model}}",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Responda de forma técnica e concisa."
-    },
-    {
-      "role": "user",
-      "content": "Defina um código curto para o projeto de integração."
-    },
-    {
-      "role": "assistant",
-      "content": "O código será NEXUS-42."
-    },
-    {
-      "role": "user",
-      "content": "Qual foi o código definido? Responda somente com o código."
+    if (!response.ok) {
+      const details = await response.text();
+      throw new Error(`HTTP ${response.status}: ${details}`);
     }
-  ],
-  "stream": false
-}
-```
 
-Execute e verifique se a resposta usa o dado presente no histórico. Depois,
-remova o par intermediário que contém `NEXUS-42` e repita.
+    const data = await response.json();
+    const content = data.message?.content?.trim();
 
-Responda:
-
-1. o servidor manteve memória fora do array `messages`?
-2. como `prompt_eval_count` mudou?
-3. que componente de uma aplicação real deve armazenar e selecionar o histórico?
-
-## Experimento 4 — resposta estruturada
-
-Crie `06 - Saída JSON` com `format: "json"`:
-
-```json
-{
-  "model": "{{model}}",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Classifique o texto 'Não consigo entrar no sistema'. Retorne JSON com categoria e prioridade. Categorias permitidas: suporte, financeiro, acesso. Prioridades permitidas: baixa, media, alta."
+    if (!content) {
+      throw new Error('O Ollama respondeu sem conteúdo utilizável.');
     }
-  ],
-  "format": "json",
-  "stream": false,
-  "options": {
-    "temperature": 0
+
+    responseElement.textContent = content;
+    showStatus(`Resposta gerada pelo modelo ${data.model}.`, 'success');
+  } catch (error) {
+    console.error(error);
+    responseElement.textContent = 'Não foi possível gerar a resposta.';
+    showStatus(error.message, 'error');
+  } finally {
+    setLoading(false);
   }
+});
+
+function setLoading(isLoading) {
+  submitButton.disabled = isLoading;
+  promptInput.disabled = isLoading;
+  submitButton.textContent = isLoading ? 'Enviando...' : 'Enviar';
+}
+
+function showStatus(message, type) {
+  statusElement.textContent = message;
+  statusElement.dataset.type = type;
 }
 ```
 
-Localize `message.content`. Verifique:
+Substitua `llama3.2:latest` pelo identificador exato obtido no Passo 3.
 
-- o conteúdo é uma string que contém JSON válido?
-- há somente os campos solicitados?
-- os valores pertencem aos conjuntos permitidos?
-- o header HTTP indica JSON mesmo quando `message.content` contém outra string
-  serializada?
+### O que o JavaScript realiza?
 
-O modo JSON não substitui validação de schema no backend.
+```mermaid
+flowchart TD
+    A[Usuário envia o formulário] --> B[Impedir recarregamento]
+    B --> C[Validar e normalizar o prompt]
+    C --> D[Desabilitar os controles]
+    D --> E[Executar fetch para /api/chat]
+    E --> F{Status HTTP indica sucesso?}
+    F -->|não| G[Apresentar erro]
+    F -->|sim| H[Converter resposta para JSON]
+    H --> I{message.content existe?}
+    I -->|não| G
+    I -->|sim| J[Exibir com textContent]
+    G --> K[Reabilitar controles]
+    J --> K
+```
 
-## Experimento 5 — streaming
+O conteúdo é exibido com `textContent`, não com `innerHTML`. Dessa maneira, uma
+resposta que contenha marcação HTML será tratada como texto, reduzindo o risco
+de injeção de conteúdo na página.
 
-Duplique `04 - Chat benchmark`, altere para `"stream": true` e salve como
-`07 - Chat streaming`.
+## Passo 7 — servir a página
 
-Execute e observe como o Thunder Client apresenta os fragmentos recebidos. Na
-resposta em streaming, analise:
+Não abra o arquivo apenas com `file://`. Utilize um servidor HTTP local para que
+a página tenha uma origem previsível.
 
-- quantidade de objetos ou linhas recebidas;
-- evolução de `message.content`;
-- valor de `done` nos fragmentos intermediários e no último;
-- fragmento em que as métricas finais aparecem;
-- diferença em relação ao único objeto retornado com `stream: false`.
+Com a extensão Live Server do VS Code:
 
-Se a versão instalada do Thunder Client não apresentar progressivamente os
-fragmentos, registre essa limitação do cliente. Não conclua que o servidor deixou
-de fazer streaming apenas com base na renderização da interface.
+1. abra `index.html`;
+2. selecione **Open with Live Server**;
+3. confirme que a URL usa `localhost:5500` ou `127.0.0.1:5500`.
 
-## Experimento 6 — testes negativos
+Se o Live Server escolher outra porta, atualize `OLLAMA_ORIGINS` no
+`compose.yaml` e recrie o contêiner antes de continuar.
 
-Crie uma pasta `Falhas esperadas` e execute:
+## Passo 8 — testar o fluxo
 
-| Caso | Alteração | Resultado a registrar |
+Execute estes casos:
+
+| Caso | Procedimento | Resultado esperado |
 |---|---|---|
-| método incorreto | `GET /api/chat` | status e corpo |
-| modelo ausente | remover `model` | status e mensagem |
-| modelo inexistente | usar identificador inválido | status e mensagem |
-| JSON malformado | remover uma chave ou vírgula necessária | comportamento do cliente ou servidor |
-| serviço indisponível | parar o contêiner antes da chamada | erro observado no Thunder Client |
+| prompt válido | enviar uma pergunta curta | resposta exibida na página |
+| envio vazio | tentar enviar somente espaços | mensagem de validação |
+| clique duplicado | clicar novamente durante a geração | botão permanece desabilitado |
+| modelo inválido | alterar temporariamente `OLLAMA_MODEL` | erro HTTP apresentado |
+| serviço indisponível | parar o contêiner e enviar | erro de conexão apresentado |
 
-Para o último caso:
+Para simular indisponibilidade somente em um ambiente individual:
 
 ```bash
 docker compose stop ollama
-```
-
-Depois do teste:
-
-```bash
 docker compose start ollama
 ```
 
-Não execute esse procedimento se o contêiner for compartilhado com outros
-estudantes.
+Não interrompa um contêiner compartilhado com outros estudantes.
 
-## Correlação com logs
+## Passo 9 — inspecionar no navegador
 
-Durante uma requisição válida e uma inválida, acompanhe:
+Abra as ferramentas de desenvolvimento e, na guia **Network**, localize a
+requisição para `/api/chat`. Registre:
 
-```bash
-docker compose logs --follow ollama
-```
+- método e URL;
+- status HTTP;
+- request payload;
+- response payload;
+- tempo total observado pelo navegador;
+- header `Content-Type`.
 
-Interrompa apenas o acompanhamento dos logs com `Ctrl+C`; isso não deve encerrar
-o contêiner. Relacione horário, rota e status do Thunder Client com as mensagens
-do serviço. Não inclua prompts ou respostas sensíveis na evidência entregue.
+Compare esses dados com a requisição criada anteriormente no Thunder Client.
 
-## Relatório técnico
+## Entrega
 
-Entregue um documento curto com:
+Entregue:
 
-1. versão do Ollama e identificador completo do modelo;
-2. exportação ou capturas das sete requisições;
-3. tabela de execução fria e aquecida;
-4. cálculo de tokens por segundo;
-5. análise do contexto explícito;
-6. avaliação da saída estruturada;
-7. descrição do streaming observado;
-8. matriz dos cinco testes negativos;
-9. duas decisões que o futuro cliente NestJS deverá implementar.
+1. `index.html`, `styles.css` e `app.js`;
+2. captura da página exibindo uma resposta;
+3. captura da requisição na guia **Network**;
+4. tabela com os cinco testes executados;
+5. resposta curta: por que essa chamada direta não deve ser a arquitetura final
+   de uma aplicação em produção?
 
-## Critérios de avaliação
+## Critérios de conclusão
 
-| Critério | Evidência esperada |
-|---|---|
-| reprodutibilidade | ambiente e modelo identificados sem valores contraditórios |
-| análise de desempenho | unidades convertidas e vazão calculada corretamente |
-| compreensão de contexto | histórico tratado como dado explícito da requisição |
-| análise de contrato | separação entre resposta HTTP e `message.content` |
-| diagnóstico | falhas relacionadas a status, corpo e logs |
-| segurança | ausência de segredos e conteúdo sensível nas evidências |
+- [ ] Ollama permanece executado exclusivamente no Docker;
+- [ ] página é servida por HTTP em uma origem autorizada;
+- [ ] prompt é lido e normalizado pelo JavaScript;
+- [ ] `fetch` envia JSON para `/api/chat`;
+- [ ] status HTTP e conteúdo da resposta são validados;
+- [ ] resposta é exibida com `textContent`;
+- [ ] controles representam carregamento e impedem envio duplicado;
+- [ ] falhas são apresentadas sem interromper o JavaScript;
+- [ ] estudante reconhece a necessidade de um backend em produção.
