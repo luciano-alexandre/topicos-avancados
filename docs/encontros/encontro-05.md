@@ -65,21 +65,6 @@ docker compose ps
 docker compose logs ollama
 ```
 
-| Configuração | Função |
-|---|---|
-| `image` | define a imagem usada para criar o contêiner |
-| `container_name` | atribui um nome previsível ao contêiner |
-| `ports` | publica a API em `localhost:11434` |
-| `volumes` | mantém os modelos após recriar o contêiner |
-
-Não acrescente acesso à GPU por tentativa. NVIDIA, AMD e outros ambientes
-possuem requisitos distintos que devem ser previamente validados.
-
-## Contêiner não é modelo
-
-Criar o contêiner inicia o servidor, mas não garante que o modelo solicitado já
-esteja disponível.
-
 ```mermaid
 flowchart TD
     I[Imagem ollama/ollama] --> C[Contêiner em execução]
@@ -91,32 +76,8 @@ flowchart TD
     A --> M2
 ```
 
-O volume evita novo download quando o contêiner é recriado. Remover o
-contêiner e remover o volume são operações diferentes.
 
-## Verificação em camadas
-
-Evite testar tudo simultaneamente. Verifique uma camada por vez.
-
-### Camada 1 — Docker
-
-```bash
-docker version
-docker ps
-```
-
-Se o cliente existe, mas não consegue falar com o daemon, o problema ainda não
-é do Ollama. No laboratório, o acesso ao Docker pode depender de permissões
-institucionais; não use `sudo` sem orientação do professor.
-
-### Camada 2 — contêiner
-
-```bash
-docker ps --filter name=ollama
-docker logs ollama
-```
-
-### Camada 3 — API
+### API
 
 1. Instale no VS Code a extensão **Thunder Client**.
 2. Abra o ícone do Thunder Client na barra lateral.
