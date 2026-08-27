@@ -275,107 +275,284 @@ falhou.
 - [Documentação do Thunder Client](https://docs.thunderclient.com/)
 - [Ambientes no Thunder Client](https://docs.thunderclient.com/features/environments)
 
-## Atividade prática curta — consultas ao Ollama com Thunder Client
+## Atividade técnica — caracterização da API local de inferência
 
 ### Objetivo
 
-Confirmar que o Ollama executado pelo Docker está acessível, identificar um
-modelo disponível e realizar duas consultas pela API usando o Thunder Client.
-A atividade é individual e deve levar aproximadamente 15 minutos.
+Tratar o Ollama como um serviço de infraestrutura e produzir uma caracterização
+técnica de seu contrato e comportamento. A atividade envolve parametrização
+das requisições no Thunder Client, comparação de execução fria e aquecida,
+cálculo de vazão, controle de contexto, streaming e testes negativos.
 
-### Passo 1 — confirmar o contêiner
+A atividade é individual e possui duração estimada de 35 a 45 minutos.
 
-No terminal, execute:
+### Cenário
+
+Você integra um servidor local de inferência a um backend. Antes de implementar
+o cliente NestJS, precisa responder com evidências:
+
+- qual modelo está realmente disponível?
+- quais campos compõem o contrato de resposta?
+- qual é o impacto do carregamento inicial?
+- qual vazão aproximada foi observada?
+- como o histórico modifica a requisição?
+- como a API se comporta diante de entradas inválidas e indisponibilidade?
+
+## Preparação
+
+Inicie o ambiente e confirme que apenas o Ollama fornece a inferência:
 
 ```bash
 docker compose up -d
 docker compose ps
+docker compose exec ollama ollama list
 ```
 
-Confirme que o serviço `ollama` está em execução. Todos os comandos do Ollama
-devem continuar sendo executados dentro do contêiner.
-
-### Passo 2 — consultar os modelos
-
-No Thunder Client, crie uma requisição com:
-
-| Campo | Valor |
-|---|---|
-| método | `GET` |
-| URL | `http://localhost:11434/api/tags` |
-
-Selecione **Send** e localize o campo `name` dentro do array `models`.
-
-Se a resposta for `{"models":[]}`, baixe o modelo indicado para a aula:
+Se não houver modelo, obtenha o modelo indicado pelo professor:
 
 ```bash
 docker compose exec ollama ollama pull llama3.2
 ```
 
-Depois do download, repita a requisição `GET /api/tags`. Copie exatamente o
-identificador retornado e atribua-o à variável `ollamaModel` do ambiente
-`ollama-local` no Thunder Client.
+No Thunder Client, crie uma coleção chamada `Ollama local` e um ambiente ativo
+chamado `ollama-local`:
 
-### Passo 3 — realizar a primeira consulta
-
-Crie uma requisição no Thunder Client:
-
-| Campo | Valor |
+| Variável | Valor inicial |
 |---|---|
-| método | `POST` |
-| URL | `http://localhost:11434/api/chat` |
-| header | `Content-Type: application/json` |
-| body | tipo `JSON` |
+| `baseUrl` | `http://localhost:11434` |
+| `model` | identificador exato retornado por `/api/tags` |
 
-Use o identificador obtido no passo anterior:
+Todas as requisições devem usar `{{baseUrl}}` e `{{model}}`. Não repita valores
+fixos em várias requisições.
+
+## Experimento 1 — descoberta e contrato
+
+Crie e salve:
+
+| Nome | Método | URL |
+|---|:---:|---|
+| `01 - Version` | `GET` | `{{baseUrl}}/api/version` |
+| `02 - Tags` | `GET` | `{{baseUrl}}/api/tags` |
+| `03 - Running models` | `GET` | `{{baseUrl}}/api/ps` |
+
+Execute as três requisições. Em `Tags`, confirme que o modelo configurado no
+ambiente corresponde exatamente a um item de `models[].name`.
+
+Registre também quais campos aparecem em cada modelo. Diferencie:
+
+- identidade do artefato;
+- tamanho em bytes;
+- formato e família, quando informados;
+- precisão ou quantização, quando informada;
+- estado carregado ou apenas armazenado.
+
+Não presuma que um modelo listado em `/api/tags` já está carregado na memória.
+
+## Experimento 2 — execução fria e aquecida
+
+Crie `04 - Chat benchmark`:
+
+```http
+POST {{baseUrl}}/api/chat
+Content-Type: application/json
+```
 
 ```json
 {
-  "model": "{{ollamaModel}}",
+  "model": "{{model}}",
   "messages": [
     {
       "role": "user",
-      "content": "Explique em até três frases o que é um servidor de inferência."
+      "content": "Explique em exatamente quatro itens os riscos de acoplar uma aplicação ao contrato interno de um provedor de IA."
     }
   ],
-  "stream": false
+  "stream": false,
+  "keep_alive": "5m",
+  "options": {
+    "temperature": 0.2
+  }
 }
 ```
 
-Selecione **Send** e localize a resposta em `message.content`.
+Antes da primeira execução, descarregue o modelo:
 
-### Passo 4 — realizar a segunda consulta
-
-Na mesma requisição, altere somente o conteúdo da mensagem:
-
-```json
-{
-  "model": "{{ollamaModel}}",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Liste três responsabilidades de um backend que utiliza IA."
-    }
-  ],
-  "stream": false
-}
+```bash
+docker compose exec ollama ollama stop llama3.2
 ```
 
-Execute novamente e verifique se a resposta apresenta exatamente três itens.
+Substitua `llama3.2` pelo identificador usado no ambiente. Execute a requisição
+uma vez, aguarde a conclusão e execute novamente sem alterar o corpo.
 
-### Registro da atividade
+Preencha:
 
-| Item | Primeira consulta | Segunda consulta |
-|---|---|---|
+| Métrica | Execução fria | Execução aquecida |
+|---|---:|---:|
 | status HTTP | | |
-| modelo retornado | | |
-| conteúdo atendeu ao pedido? | | |
+| `load_duration` | | |
 | `prompt_eval_count` | | |
+| `prompt_eval_duration` | | |
 | `eval_count` | | |
+| `eval_duration` | | |
 | `total_duration` | | |
+| restrição de quatro itens atendida? | | |
 
-### Entrega
+As durações do Ollama são informadas em nanossegundos. Calcule a vazão de saída:
 
-Entregue a tabela preenchida e uma captura do Thunder Client mostrando uma das
-respostas. A captura não deve exibir dados pessoais, caminhos privados ou outras
-informações sensíveis.
+```text
+tokens por segundo = eval_count ÷ (eval_duration ÷ 1.000.000.000)
+```
+
+Registre o cálculo para as duas execuções. Não use o tempo mostrado pelo Thunder
+Client como substituto de `eval_duration`: o tempo do cliente também inclui
+rede, serialização e outras etapas.
+
+## Experimento 3 — contexto explícito
+
+Duplique a requisição e salve como `05 - Chat com histórico`. Use:
+
+```json
+{
+  "model": "{{model}}",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Responda de forma técnica e concisa."
+    },
+    {
+      "role": "user",
+      "content": "Defina um código curto para o projeto de integração."
+    },
+    {
+      "role": "assistant",
+      "content": "O código será NEXUS-42."
+    },
+    {
+      "role": "user",
+      "content": "Qual foi o código definido? Responda somente com o código."
+    }
+  ],
+  "stream": false
+}
+```
+
+Execute e verifique se a resposta usa o dado presente no histórico. Depois,
+remova o par intermediário que contém `NEXUS-42` e repita.
+
+Responda:
+
+1. o servidor manteve memória fora do array `messages`?
+2. como `prompt_eval_count` mudou?
+3. que componente de uma aplicação real deve armazenar e selecionar o histórico?
+
+## Experimento 4 — resposta estruturada
+
+Crie `06 - Saída JSON` com `format: "json"`:
+
+```json
+{
+  "model": "{{model}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classifique o texto 'Não consigo entrar no sistema'. Retorne JSON com categoria e prioridade. Categorias permitidas: suporte, financeiro, acesso. Prioridades permitidas: baixa, media, alta."
+    }
+  ],
+  "format": "json",
+  "stream": false,
+  "options": {
+    "temperature": 0
+  }
+}
+```
+
+Localize `message.content`. Verifique:
+
+- o conteúdo é uma string que contém JSON válido?
+- há somente os campos solicitados?
+- os valores pertencem aos conjuntos permitidos?
+- o header HTTP indica JSON mesmo quando `message.content` contém outra string
+  serializada?
+
+O modo JSON não substitui validação de schema no backend.
+
+## Experimento 5 — streaming
+
+Duplique `04 - Chat benchmark`, altere para `"stream": true` e salve como
+`07 - Chat streaming`.
+
+Execute e observe como o Thunder Client apresenta os fragmentos recebidos. Na
+resposta em streaming, analise:
+
+- quantidade de objetos ou linhas recebidas;
+- evolução de `message.content`;
+- valor de `done` nos fragmentos intermediários e no último;
+- fragmento em que as métricas finais aparecem;
+- diferença em relação ao único objeto retornado com `stream: false`.
+
+Se a versão instalada do Thunder Client não apresentar progressivamente os
+fragmentos, registre essa limitação do cliente. Não conclua que o servidor deixou
+de fazer streaming apenas com base na renderização da interface.
+
+## Experimento 6 — testes negativos
+
+Crie uma pasta `Falhas esperadas` e execute:
+
+| Caso | Alteração | Resultado a registrar |
+|---|---|---|
+| método incorreto | `GET /api/chat` | status e corpo |
+| modelo ausente | remover `model` | status e mensagem |
+| modelo inexistente | usar identificador inválido | status e mensagem |
+| JSON malformado | remover uma chave ou vírgula necessária | comportamento do cliente ou servidor |
+| serviço indisponível | parar o contêiner antes da chamada | erro observado no Thunder Client |
+
+Para o último caso:
+
+```bash
+docker compose stop ollama
+```
+
+Depois do teste:
+
+```bash
+docker compose start ollama
+```
+
+Não execute esse procedimento se o contêiner for compartilhado com outros
+estudantes.
+
+## Correlação com logs
+
+Durante uma requisição válida e uma inválida, acompanhe:
+
+```bash
+docker compose logs --follow ollama
+```
+
+Interrompa apenas o acompanhamento dos logs com `Ctrl+C`; isso não deve encerrar
+o contêiner. Relacione horário, rota e status do Thunder Client com as mensagens
+do serviço. Não inclua prompts ou respostas sensíveis na evidência entregue.
+
+## Relatório técnico
+
+Entregue um documento curto com:
+
+1. versão do Ollama e identificador completo do modelo;
+2. exportação ou capturas das sete requisições;
+3. tabela de execução fria e aquecida;
+4. cálculo de tokens por segundo;
+5. análise do contexto explícito;
+6. avaliação da saída estruturada;
+7. descrição do streaming observado;
+8. matriz dos cinco testes negativos;
+9. duas decisões que o futuro cliente NestJS deverá implementar.
+
+## Critérios de avaliação
+
+| Critério | Evidência esperada |
+|---|---|
+| reprodutibilidade | ambiente e modelo identificados sem valores contraditórios |
+| análise de desempenho | unidades convertidas e vazão calculada corretamente |
+| compreensão de contexto | histórico tratado como dado explícito da requisição |
+| análise de contrato | separação entre resposta HTTP e `message.content` |
+| diagnóstico | falhas relacionadas a status, corpo e logs |
+| segurança | ausência de segredos e conteúdo sensível nas evidências |
