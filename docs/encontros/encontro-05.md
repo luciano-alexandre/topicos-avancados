@@ -271,6 +271,7 @@ falhou.
 - [Introdução à API do Ollama](https://docs.ollama.com/api/introduction)
 - [Rota de chat do Ollama](https://docs.ollama.com/api/chat)
 - [Ollama com Docker](https://docs.ollama.com/docker)
+- [FAQ do Ollama: origens adicionais](https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama)
 - [Serviços no Docker Compose](https://docs.docker.com/reference/compose-file/services/)
 - [Documentação do Thunder Client](https://docs.thunderclient.com/)
 - [Ambientes no Thunder Client](https://docs.thunderclient.com/features/environments)
@@ -656,41 +657,4 @@ docker compose stop ollama
 docker compose start ollama
 ```
 
-Não interrompa um contêiner compartilhado com outros estudantes.
 
-## Passo 9 — inspecionar no navegador
-
-Abra as ferramentas de desenvolvimento e, na guia **Network**, localize a
-requisição para `/api/chat`. Registre:
-
-- método e URL;
-- status HTTP;
-- request payload;
-- response payload;
-- tempo total observado pelo navegador;
-- header `Content-Type`.
-
-Compare esses dados com a requisição criada anteriormente no Thunder Client.
-
-## Entrega
-
-Entregue:
-
-1. `index.html`, `styles.css` e `app.js`;
-2. captura da página exibindo uma resposta;
-3. captura da requisição na guia **Network**;
-4. tabela com os cinco testes executados;
-5. resposta curta: por que essa chamada direta não deve ser a arquitetura final
-   de uma aplicação em produção?
-
-## Critérios de conclusão
-
-- [ ] Ollama permanece executado exclusivamente no Docker;
-- [ ] página é servida por HTTP em uma origem autorizada;
-- [ ] prompt é lido e normalizado pelo JavaScript;
-- [ ] `fetch` envia JSON para `/api/chat`;
-- [ ] status HTTP e conteúdo da resposta são validados;
-- [ ] resposta é exibida com `textContent`;
-- [ ] controles representam carregamento e impedem envio duplicado;
-- [ ] falhas são apresentadas sem interromper o JavaScript;
-- [ ] estudante reconhece a necessidade de um backend em produção.
