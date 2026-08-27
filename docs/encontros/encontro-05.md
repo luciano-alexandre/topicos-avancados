@@ -89,7 +89,7 @@ flowchart TD
 Uma resposta válida comprova que a API está acessível, mas não que determinado
 modelo está instalado.
 
-### Camada 4 — catálogo local
+### Catálogo Local
 
 No Thunder Client:
 
@@ -109,9 +109,6 @@ Todos os comandos do Ollama serão executados dentro do serviço do Compose:
 docker compose exec ollama ollama pull llama3.2
 docker compose exec ollama ollama list
 ```
-
-O download deve ser realizado uma vez. Se o laboratório não permitir downloads,
-a atividade deve usar o modelo previamente armazenado no volume.
 
 ## Preparação do Thunder Client
 
