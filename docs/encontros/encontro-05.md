@@ -188,7 +188,7 @@ Uma resposta concluída pode conter:
 
 ```mermaid
 flowchart LR
-    Q[JSON da requisição] --> A[/api/chat]
+    Q[JSON da requisição] --> A["Rota /api/chat"]
     A --> G[Geração]
     G --> J[JSON da resposta]
     J --> T[message.content]
