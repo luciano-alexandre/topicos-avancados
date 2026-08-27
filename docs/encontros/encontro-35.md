@@ -1,29 +1,28 @@
-# Encontro 35 — Acompanhamento do projeto: integração e revisão arquitetural
+# Encontro 35 — Privacidade, ética e uso responsável
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: acompanhamento do projeto final.
+- tema curricular: Privacidade, ética e uso responsável.
 
 ## Objetivos
 
-- Acompanhar a integração dos componentes principais.
-- Revisar arquitetura, escopo e fronteiras entre IA e regras determinísticas.
+- Analisar dados pessoais, viés, transparência e direitos.
+- Definir supervisão e limites da automação.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
-2. apresentação do estado de cada projeto — 20 min;
-3. desenvolvimento orientado e revisão arquitetural — 50 min;
-4. síntese e registro da evidência — 10 min.
+2. fundamentação e demonstração — 40 min;
+3. discussão de casos e revisão do projeto — 30 min;
+4. síntese e registro — 10 min.
 
-## Evidência de aprendizagem
+## Resultado esperado
 
-Plano de ajustes e versão integrada do projeto.
+Checklist de uso responsável.
 
 ## Preparação e continuidade
 
 Consultar as referências oficiais relacionadas ao tema, registrar versões de
-modelos e ferramentas utilizadas e integrar a evidência ao portfólio ou ao
-projeto quando aplicável.
+modelos e ferramentas e integrar o resultado ao projeto quando aplicável.

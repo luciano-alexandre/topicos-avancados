@@ -1,26 +1,26 @@
-# Encontro 26 — RAG avançado: busca híbrida, reescrita, reranking e múltiplas fontes
+# Encontro 26 — Avaliação de RAG: relevância, groundedness e cobertura
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: RAG avançado: busca híbrida, reescrita, reranking e múltiplas fontes.
+- tema curricular: Avaliação de RAG: relevância, groundedness e cobertura.
 
 ## Objetivos
 
-- Melhorar consultas e ordenar resultados.
-- Tratar múltiplas fontes e controlar contexto.
+- Avaliar recuperação e geração separadamente.
+- Combinar casos, rubrica humana e métricas.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. experimento A/B com estratégias avançadas — 30 min;
+3. construção de dataset e avaliação inicial — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Pipeline RAG aprimorado.
+Baseline de qualidade do RAG.
 
 ## Preparação e continuidade
 

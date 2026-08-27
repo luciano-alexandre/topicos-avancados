@@ -1,26 +1,26 @@
-# Encontro 22 — RAG: arquitetura e ingestão documental
+# Encontro 22 — Avaliação da recuperação semântica
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: RAG: arquitetura e ingestão documental.
+- tema curricular: Avaliação da recuperação semântica.
 
 ## Objetivos
 
-- Explicar o pipeline RAG.
-- Separar ingestão e consulta.
+- Construir consultas com julgamentos de relevância.
+- Comparar estratégias e diagnosticar erros.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. desenho da arquitetura e ingestão inicial — 30 min;
+3. cálculo e análise de métricas de recuperação — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Pipeline básico versionado.
+Baseline documentado.
 
 ## Preparação e continuidade
 

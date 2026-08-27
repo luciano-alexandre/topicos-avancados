@@ -16,12 +16,12 @@ privacidade e controle arquitetural.
 
 ## Organização
 
-- **Unidade 1 — encontros 1 a 19:** arquitetura de aplicações com IA,
+- **Unidade 1 — encontros 1 a 20:** arquitetura de aplicações com IA,
   apresentação dos diagramas, fundamentos, modelos locais, integração Web,
   prompts, saída estruturada e tool calling, com atividades práticas nos
-  encontros 7 e 14, seminários nos encontros 17 e 18 e embeddings como
-  transição no encontro 19.
-- **Unidade 2 — encontros 20 a 40:** busca vetorial, avaliação da
+  encontros 7, 14 e 17, seminários nos encontros 18 e 19 e embeddings como
+  transição no encontro 20.
+- **Unidade 2 — encontros 21 a 40:** busca vetorial, avaliação da
   recuperação, RAG, agentes, workflows, IA no ciclo de software, avaliação,
   observabilidade, segurança, ética e projeto final.
 

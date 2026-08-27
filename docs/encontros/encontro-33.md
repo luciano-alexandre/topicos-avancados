@@ -1,26 +1,26 @@
-# Encontro 33 — Segurança em aplicações baseadas em IA
+# Encontro 33 — Observabilidade, tracing, desempenho e otimização
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Segurança em aplicações baseadas em IA.
+- tema curricular: Observabilidade, tracing, desempenho e otimização.
 
 ## Objetivos
 
-- Reconhecer injection, jailbreak e vazamento.
-- Aplicar validação, isolamento e menor privilégio.
+- Instrumentar modelos, ferramentas e recuperação.
+- Analisar tokens, latência, memória e gargalos.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. threat modeling e testes adversariais — 30 min;
+3. coleta de traces e comparação de cenários — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Ameaças e controles priorizados.
+Painel ou relatório operacional.
 
 ## Preparação e continuidade
 

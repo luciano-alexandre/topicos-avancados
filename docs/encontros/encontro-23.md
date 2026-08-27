@@ -1,26 +1,26 @@
-# Encontro 23 — Extração, normalização, chunking e metadados
+# Encontro 23 — RAG: arquitetura e ingestão documental
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Extração, normalização, chunking e metadados.
+- tema curricular: RAG: arquitetura e ingestão documental.
 
 ## Objetivos
 
-- Comparar estratégias de extração e divisão.
-- Preservar origem e metadados dos segmentos.
+- Explicar o pipeline RAG.
+- Separar ingestão e consulta.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. experimentos com tamanho e sobreposição — 30 min;
+3. desenho da arquitetura e ingestão inicial — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Corpus rastreável.
+Pipeline básico versionado.
 
 ## Preparação e continuidade
 

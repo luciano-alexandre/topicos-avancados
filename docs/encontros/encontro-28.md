@@ -1,26 +1,26 @@
-# Encontro 28 — Agentes: planejamento, ferramentas, orquestração e supervisão
+# Encontro 28 — Chatbot, workflow e agente; estado e memória
 
 ## Organização
 
 - Unidade pedagógica: 2;
 - duração: 90 minutos (2 aulas de 45 minutos);
-- tema curricular: Agentes: planejamento, ferramentas, orquestração e supervisão.
+- tema curricular: Chatbot, workflow e agente; estado e memória.
 
 ## Objetivos
 
-- Implementar ciclos com limites.
-- Avaliar especialização, coordenação e supervisão humana.
+- Distinguir as três arquiteturas.
+- Modelar objetivos, estado, memória e autonomia.
 
 ## Desenvolvimento sugerido
 
 1. retomada e questão-problema — 10 min;
 2. fundamentação e demonstração — 40 min;
-3. protótipo com ferramentas e limite de iterações — 30 min;
+3. classificação de cenários e desenho de alternativas — 30 min;
 4. síntese e registro — 10 min.
 
 ## Resultado esperado
 
-Agente controlado e auditável.
+Decisão arquitetural justificada.
 
 ## Preparação e continuidade
 

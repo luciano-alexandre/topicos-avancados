@@ -1,4 +1,4 @@
-# Encontro 38 — Apresentações dos projetos — parte 2
+# Encontro 38 — Apresentações dos projetos — parte 1
 
 ## Organização
 
@@ -9,17 +9,17 @@
 ## Objetivos
 
 - Apresentar problema, arquitetura, funcionamento e resultados.
-- Consolidar aprendizados e realizar a retrospectiva da disciplina.
+- Demonstrar domínio das decisões e limitações da solução.
 
 ## Desenvolvimento sugerido
 
 1. abertura e organização das apresentações — 5 min;
-2. apresentações e demonstrações dos projetos — 65 min;
-3. feedback, retrospectiva e encerramento — 20 min.
+2. apresentações e demonstrações dos projetos — 75 min;
+3. feedback e fechamento — 10 min.
 
 ## Evidência de aprendizagem
 
-Apresentação e entrega final dos projetos.
+Apresentação e versão final dos projetos programados para esta etapa.
 
 ## Preparação e continuidade
 
