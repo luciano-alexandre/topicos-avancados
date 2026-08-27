@@ -10,7 +10,7 @@ artefatos e organização do ambiente com Docker.
 - Explicar o papel de um servidor de inferência na arquitetura Web.
 - Diferenciar modelo, servidor de inferência, API e aplicação cliente.
 - Executar e inspecionar um modelo local com Ollama.
-- Consumir as rotas essenciais da API usando `curl`.
+- Consumir as rotas essenciais da API usando o Thunder Client no VS Code.
 - Compreender volumes, portas e comunicação entre host e contêiner.
 - Registrar modelo, configuração e limitações para tornar o ambiente reproduzível.
 
@@ -31,69 +31,46 @@ flowchart LR
     O --> C
 ```
 
-Essa separação permite que `curl`, NestJS e outras aplicações consumam o mesmo
-servidor, desde que respeitem seu contrato HTTP.
-
-## Vocabulário do ambiente
-
-| Termo | Significado neste encontro |
-|---|---|
-| modelo | artefato que contém parâmetros e metadados necessários à inferência |
-| Ollama | servidor e ferramenta que gerenciam modelos e expõem uma API local |
-| runtime | software que executa os cálculos no hardware disponível |
-| imagem | pacote usado pelo Docker para criar contêineres |
-| contêiner | processo isolado criado a partir de uma imagem |
-| volume | armazenamento persistente independente do contêiner |
-| porta publicada | ligação entre uma porta do host e uma do contêiner |
-
 Ollama não é o modelo. Ele administra modelos e oferece uma interface para
 executá-los. Docker também não é uma máquina virtual completa: organiza
 processos isolados que compartilham o kernel do host.
 
-## Antes de instalar ou baixar
+## Execução padronizada com Docker Compose
 
-Modelos podem ocupar vários gigabytes. Antes da aula prática:
+Neste encontro, o Ollama não será instalado diretamente no sistema operacional.
+Servidor, CLI e modelos serão executados ou gerenciados dentro do contêiner. O
+host precisará apenas de Docker, Docker Compose, VS Code e Thunder Client.
 
-1. confirme o espaço livre em disco;
-2. registre a quantidade de RAM disponível;
-3. verifique se Docker ou Ollama já estão instalados;
-4. não baixe vários modelos sem necessidade;
-5. use apenas o modelo indicado para o laboratório;
-6. não exponha a porta do Ollama à rede pública.
+Crie um arquivo `compose.yaml`:
 
-O nome e o tamanho do modelo serão definidos conforme a infraestrutura. Os
-exemplos usam `llama3.2`, presente na documentação oficial, mas o professor pode
-indicar outro modelo menor ou já armazenado nas máquinas.
+```yaml
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
 
-## Duas formas de execução
-
-### Instalação direta
-
-Ollama pode ser instalado diretamente no sistema operacional. Após ser
-iniciado, sua API local é servida, por padrão, em:
-
-```text
-http://localhost:11434/api
+volumes:
+  ollama-data:
 ```
 
-### Execução com Docker
-
-Para um ambiente somente com CPU, a documentação oficial apresenta:
+Inicie o serviço:
 
 ```bash
-docker run -d \
-  --name ollama \
-  -p 11434:11434 \
-  -v ollama:/root/.ollama \
-  ollama/ollama
+docker compose up -d
+docker compose ps
+docker compose logs ollama
 ```
 
-| Trecho | Função |
+| Configuração | Função |
 |---|---|
-| `-d` | executa em segundo plano |
-| `--name ollama` | atribui um nome ao contêiner |
-| `-p 11434:11434` | publica a porta da API no host |
-| `-v ollama:/root/.ollama` | mantém modelos em um volume persistente |
+| `image` | define a imagem usada para criar o contêiner |
+| `container_name` | atribui um nome previsível ao contêiner |
+| `ports` | publica a API em `localhost:11434` |
+| `volumes` | mantém os modelos após recriar o contêiner |
 
 Não acrescente acesso à GPU por tentativa. NVIDIA, AMD e outros ambientes
 possuem requisitos distintos que devem ser previamente validados.
@@ -141,76 +118,92 @@ docker logs ollama
 
 ### Camada 3 — API
 
-```bash
-curl http://localhost:11434/api/version
-```
+1. Instale no VS Code a extensão **Thunder Client**.
+2. Abra o ícone do Thunder Client na barra lateral.
+3. Selecione **New Request**.
+4. Escolha o método `GET`.
+5. Informe `http://localhost:11434/api/version`.
+6. Selecione **Send** e registre status, tempo e corpo da resposta.
 
 Uma resposta válida comprova que a API está acessível, mas não que determinado
 modelo está instalado.
 
 ### Camada 4 — catálogo local
 
-```bash
-curl http://localhost:11434/api/tags
-```
+No Thunder Client:
+
+1. crie outra requisição `GET`;
+2. informe `http://localhost:11434/api/tags`;
+3. selecione **Send**;
+4. localize o array `models` no JSON retornado;
+5. registre o valor completo do campo `name` do modelo escolhido.
 
 Registre o identificador exatamente como retornado, incluindo a tag.
 
 ## Obtenção e inspeção de um modelo
 
-Na instalação direta:
+Todos os comandos do Ollama serão executados dentro do serviço do Compose:
 
 ```bash
-ollama pull llama3.2
-ollama list
-```
-
-No contêiner:
-
-```bash
-docker exec -it ollama ollama pull llama3.2
-docker exec -it ollama ollama list
+docker compose exec ollama ollama pull llama3.2
+docker compose exec ollama ollama list
 ```
 
 O download deve ser realizado uma vez. Se o laboratório não permitir downloads,
 a atividade deve usar o modelo previamente armazenado no volume.
 
-## Primeira inferência pela linha de comando
+## Preparação do Thunder Client
 
-```bash
-docker exec -it ollama ollama run llama3.2
-```
+O Thunder Client é um cliente de API integrado ao VS Code. Ele permite escolher
+método, URL, cabeçalhos e corpo sem depender da sintaxe do terminal.
 
-Essa interface é útil para uma verificação rápida, mas uma aplicação Web
-utilizará a API HTTP.
+Crie um ambiente chamado `ollama-local`:
 
-## A rota de chat
+| Variável | Valor |
+|---|---|
+| `ollamaBaseUrl` | `http://localhost:11434` |
+| `ollamaModel` | identificador obtido em `/api/tags` |
+
+Marque o ambiente como ativo. Nas requisições, use `{{ollamaBaseUrl}}` e
+`{{ollamaModel}}`. Variáveis reduzem erros de cópia e facilitam a troca do
+modelo, mas não devem armazenar segredos em ambientes compartilhados.
+
+## Primeira inferência pela rota de chat
 
 ```http
 POST http://localhost:11434/api/chat
 Content-Type: application/json
 ```
 
-Exemplo sem streaming:
+Configure no Thunder Client:
 
-```bash
-curl http://localhost:11434/api/chat \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "llama3.2",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Explique em duas frases o papel de uma API REST."
-      }
-    ],
-    "stream": false
-  }'
+1. selecione **New Request**;
+2. escolha o método `POST`;
+3. use a URL `{{ollamaBaseUrl}}/api/chat`;
+4. abra **Headers** e confirme `Content-Type: application/json`;
+5. abra **Body**, selecione **JSON** e insira:
+
+```json
+{
+  "model": "{{ollamaModel}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explique em duas frases o papel de uma API REST."
+    }
+  ],
+  "stream": false
+}
 ```
 
-Substitua `llama3.2` pelo identificador registrado em `/api/tags`. O valor
-`stream: false` solicita uma única resposta JSON. O streaming será estudado
-posteriormente.
+6. selecione **Send**;
+7. confirme o status HTTP;
+8. localize `message.content`, `prompt_eval_count`, `eval_count` e
+   `total_duration`;
+9. salve a requisição como `Chat sem streaming`.
+
+O valor `stream: false` solicita uma única resposta JSON, mais simples de
+inspecionar no Thunder Client. O streaming será estudado posteriormente.
 
 ## Estrutura da requisição
 
@@ -258,26 +251,30 @@ flowchart LR
     N[Contêiner NestJS] -->|ollama:11434| O
 ```
 
-## Organização inicial com Compose
+## Gerenciamento do ambiente com Compose
 
-```yaml
-services:
-  ollama:
-    image: ollama/ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-
-volumes:
-  ollama-data:
-```
+Depois que o `compose.yaml` estiver criado, utilize sempre o Compose para
+gerenciar o Ollama:
 
 ```bash
 docker compose up -d
 docker compose ps
 docker compose logs ollama
 docker compose config
+```
+
+Para inspecionar versão e modelos sem instalar o executável no host:
+
+```bash
+docker compose exec ollama ollama --version
+docker compose exec ollama ollama list
+```
+
+Para interromper e iniciar novamente sem remover o volume:
+
+```bash
+docker compose stop ollama
+docker compose start ollama
 ```
 
 Fixar uma tag de imagem pode melhorar a reprodução, mas a tag deve ser
@@ -314,25 +311,27 @@ falhou.
 ## Demonstração guiada
 
 1. confirmar Docker e contêiner;
-2. consultar versão e catálogo do Ollama;
-3. confirmar o modelo escolhido;
-4. executar uma mensagem pela CLI;
-5. repetir pela rota `/api/chat`;
-6. localizar texto, contagens e durações;
+2. consultar a versão pelo Thunder Client;
+3. consultar `/api/tags` e confirmar o modelo;
+4. configurar o ambiente `ollama-local` no Thunder Client;
+5. executar a requisição `POST /api/chat`;
+6. localizar texto, contagens e durações no JSON;
 7. comparar URL no host e nome do serviço no Compose;
-8. reiniciar o contêiner e confirmar a persistência.
+8. reiniciar o contêiner e repetir as requisições salvas;
+9. confirmar que o modelo permaneceu no volume.
 
 ## Registro individual
 
 | Item | Valor observado |
 |---|---|
 | sistema operacional | |
-| forma de execução | instalação direta ou Docker |
+| forma de execução | Docker Compose |
 | versão do Docker | |
 | versão do Ollama | |
 | modelo e tag | |
-| URL usada no host | |
-| rota testada | |
+| ambiente ativo no Thunder Client | |
+| URL usada no Thunder Client | |
+| requisições salvas | |
 | tokens de entrada e saída | |
 | duração total | |
 | limitação observada | |
@@ -344,7 +343,7 @@ falhou.
 3. Por que `localhost` pode apontar para destinos diferentes?
 4. O que `/api/tags` permite verificar?
 5. Por que a primeira inferência pode demorar mais?
-6. Qual é a diferença entre testar a CLI e testar a API?
+6. Que informações precisam ser configuradas no Thunder Client para testar a API?
 7. Que informações tornam o experimento reproduzível?
 
 ## Checklist de aprendizagem
@@ -352,7 +351,8 @@ falhou.
 - [ ] explicar o papel do servidor de inferência;
 - [ ] identificar imagem, contêiner, volume e porta;
 - [ ] verificar o serviço antes da geração;
-- [ ] consumir `/api/chat` sem streaming;
+- [ ] configurar um ambiente no Thunder Client;
+- [ ] consumir `/api/version`, `/api/tags` e `/api/chat` pelo Thunder Client;
 - [ ] localizar resposta e métricas no JSON;
 - [ ] diferenciar endereço do host e entre contêineres;
 - [ ] registrar configuração sem expor segredos.
@@ -369,3 +369,5 @@ falhas. No próximo encontro, a chamada manual será encapsulada pelo NestJS.
 - [Rota de chat do Ollama](https://docs.ollama.com/api/chat)
 - [Ollama com Docker](https://docs.ollama.com/docker)
 - [Serviços no Docker Compose](https://docs.docker.com/reference/compose-file/services/)
+- [Documentação do Thunder Client](https://docs.thunderclient.com/)
+- [Ambientes no Thunder Client](https://docs.thunderclient.com/features/environments)
