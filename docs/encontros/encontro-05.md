@@ -266,61 +266,6 @@ O arquivo `.env` real deve ser ignorado pelo Git.
 Não conclua que “a IA está com problema” antes de identificar a camada que
 falhou.
 
-## Demonstração guiada
-
-1. confirmar Docker e contêiner;
-2. consultar a versão pelo Thunder Client;
-3. consultar `/api/tags` e confirmar o modelo;
-4. configurar o ambiente `ollama-local` no Thunder Client;
-5. executar a requisição `POST /api/chat`;
-6. localizar texto, contagens e durações no JSON;
-7. comparar URL no host e nome do serviço no Compose;
-8. reiniciar o contêiner e repetir as requisições salvas;
-9. confirmar que o modelo permaneceu no volume.
-
-## Registro individual
-
-| Item | Valor observado |
-|---|---|
-| sistema operacional | |
-| forma de execução | Docker Compose |
-| versão do Docker | |
-| versão do Ollama | |
-| modelo e tag | |
-| ambiente ativo no Thunder Client | |
-| URL usada no Thunder Client | |
-| requisições salvas | |
-| tokens de entrada e saída | |
-| duração total | |
-| limitação observada | |
-
-## Questões para revisão
-
-1. Por que Ollama e modelo não são sinônimos?
-2. Qual é a função do volume?
-3. Por que `localhost` pode apontar para destinos diferentes?
-4. O que `/api/tags` permite verificar?
-5. Por que a primeira inferência pode demorar mais?
-6. Que informações precisam ser configuradas no Thunder Client para testar a API?
-7. Que informações tornam o experimento reproduzível?
-
-## Checklist de aprendizagem
-
-- [ ] explicar o papel do servidor de inferência;
-- [ ] identificar imagem, contêiner, volume e porta;
-- [ ] verificar o serviço antes da geração;
-- [ ] configurar um ambiente no Thunder Client;
-- [ ] consumir `/api/version`, `/api/tags` e `/api/chat` pelo Thunder Client;
-- [ ] localizar resposta e métricas no JSON;
-- [ ] diferenciar endereço do host e entre contêineres;
-- [ ] registrar configuração sem expor segredos.
-
-## Síntese do encontro
-
-Executar um modelo local envolve manter um servidor acessível, conhecer seu
-contrato HTTP, preservar artefatos, configurar a rede e observar recursos e
-falhas. No próximo encontro, a chamada manual será encapsulada pelo NestJS.
-
 ## Fontes oficiais de apoio
 
 - [Introdução à API do Ollama](https://docs.ollama.com/api/introduction)
@@ -329,3 +274,108 @@ falhas. No próximo encontro, a chamada manual será encapsulada pelo NestJS.
 - [Serviços no Docker Compose](https://docs.docker.com/reference/compose-file/services/)
 - [Documentação do Thunder Client](https://docs.thunderclient.com/)
 - [Ambientes no Thunder Client](https://docs.thunderclient.com/features/environments)
+
+## Atividade prática curta — consultas ao Ollama com Thunder Client
+
+### Objetivo
+
+Confirmar que o Ollama executado pelo Docker está acessível, identificar um
+modelo disponível e realizar duas consultas pela API usando o Thunder Client.
+A atividade é individual e deve levar aproximadamente 15 minutos.
+
+### Passo 1 — confirmar o contêiner
+
+No terminal, execute:
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Confirme que o serviço `ollama` está em execução. Todos os comandos do Ollama
+devem continuar sendo executados dentro do contêiner.
+
+### Passo 2 — consultar os modelos
+
+No Thunder Client, crie uma requisição com:
+
+| Campo | Valor |
+|---|---|
+| método | `GET` |
+| URL | `http://localhost:11434/api/tags` |
+
+Selecione **Send** e localize o campo `name` dentro do array `models`.
+
+Se a resposta for `{"models":[]}`, baixe o modelo indicado para a aula:
+
+```bash
+docker compose exec ollama ollama pull llama3.2
+```
+
+Depois do download, repita a requisição `GET /api/tags`. Copie exatamente o
+identificador retornado e atribua-o à variável `ollamaModel` do ambiente
+`ollama-local` no Thunder Client.
+
+### Passo 3 — realizar a primeira consulta
+
+Crie uma requisição no Thunder Client:
+
+| Campo | Valor |
+|---|---|
+| método | `POST` |
+| URL | `http://localhost:11434/api/chat` |
+| header | `Content-Type: application/json` |
+| body | tipo `JSON` |
+
+Use o identificador obtido no passo anterior:
+
+```json
+{
+  "model": "{{ollamaModel}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explique em até três frases o que é um servidor de inferência."
+    }
+  ],
+  "stream": false
+}
+```
+
+Selecione **Send** e localize a resposta em `message.content`.
+
+### Passo 4 — realizar a segunda consulta
+
+Na mesma requisição, altere somente o conteúdo da mensagem:
+
+```json
+{
+  "model": "{{ollamaModel}}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Liste três responsabilidades de um backend que utiliza IA."
+    }
+  ],
+  "stream": false
+}
+```
+
+Execute novamente e verifique se a resposta apresenta exatamente três itens.
+
+### Registro da atividade
+
+| Item | Primeira consulta | Segunda consulta |
+|---|---|---|
+| status HTTP | | |
+| modelo retornado | | |
+| conteúdo atendeu ao pedido? | | |
+| `prompt_eval_count` | | |
+| `eval_count` | | |
+| `total_duration` | | |
+
+### Entrega
+
+Entregue a tabela preenchida e uma captura do Thunder Client mostrando uma das
+respostas. A captura não deve exibir dados pessoais, caminhos privados ou outras
+informações sensíveis.
