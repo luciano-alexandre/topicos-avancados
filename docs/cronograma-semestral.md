@@ -1,4 +1,4 @@
-# Cronograma Semestral — 39 Encontros
+# Cronograma Semestral — 40 Encontros
 
 Cada encontro possui 90 minutos, equivalentes a 2 aulas de 45 minutos. Todas as
 apresentações dos diagramas do Encontro 01 serão concluídas no Encontro 02; os
@@ -44,4 +44,5 @@ conteúdos seguintes foram antecipados em um encontro.
 | [36](encontros/encontro-36.md) | U2 | Acompanhamento do projeto: testes, segurança e documentação |
 | [37](encontros/encontro-37.md) | U2 | Apresentações dos projetos — parte 1 |
 | [38](encontros/encontro-38.md) | U2 | Apresentações dos projetos — parte 2 |
-| [39](encontros/encontro-39.md) | U2 | Síntese integradora, devolutivas e encerramento |
+| [39](encontros/encontro-39.md) | U2 | Devolutivas e consolidação dos projetos |
+| [40](encontros/encontro-40.md) | U2 | Síntese integradora e encerramento |

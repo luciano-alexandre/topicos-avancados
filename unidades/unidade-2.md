@@ -2,7 +2,7 @@
 
 ## Período
 
-Encontros 20 a 39 (40 aulas; 30 horas-aula).
+Encontros 20 a 40 (42 aulas; 31,5 horas-aula).
 
 ## Temas curriculares
 
@@ -10,7 +10,8 @@ Unidades temáticas 7 a 17: embeddings, busca vetorial, avaliação da recupera�
 RAG básico e avançado, agentes, workflows, IA no ciclo de software, avaliação,
 observabilidade, segurança, privacidade, ética e uso responsável. O conteúdo de
 embeddings é introduzido no Encontro 19 como transição; os encontros 37 e 38
-recebem as apresentações e o Encontro 39 consolida devolutivas e próximos passos.
+recebem as apresentações, o Encontro 39 consolida as devolutivas e o Encontro 40
+realiza a síntese integradora e o encerramento.
 
 ## Produtos esperados
 

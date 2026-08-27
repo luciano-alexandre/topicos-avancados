@@ -34,7 +34,7 @@ responde?”, será necessário perguntar:
 
 ## Organização da disciplina
 
-A disciplina possui 58,5 horas, distribuídas em 78 aulas de 45 minutos e 39
+A disciplina possui 60 horas, distribuídas em 80 aulas de 45 minutos e 40
 encontros de 90 minutos. O percurso parte dos fundamentos e chega à construção
 e avaliação de uma aplicação completa.
 
