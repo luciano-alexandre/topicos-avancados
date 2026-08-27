@@ -11,8 +11,8 @@ nota e será desenvolvido incrementalmente.
 - equipes de até 4 integrantes ou trabalho individual;
 - repositório Git com contribuições identificáveis;
 - proposta aprovada contendo problema, usuários, dados, riscos e critério de sucesso;
-- checkpoints nos encontros 24, 30, 35, 37 e 38;
-- apresentações e demonstrações nos encontros 39 e 40.
+- checkpoints nos encontros 23, 29, 34, 36 e 37;
+- apresentações e demonstrações nos encontros 38 e 39.
 
 ## Requisitos mínimos
 

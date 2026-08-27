@@ -6,11 +6,11 @@ Tecnologia em Sistemas para Internet (TSI).
 
 ## Carga horária e organização
 
-- Carga horária total: **60 horas-aula**;
-- Total: **80 aulas de 45 minutos**;
+- Carga horária total: **58,5 horas**;
+- Total: **78 aulas de 45 minutos**;
 - Cada encontro: **2 aulas (90 minutos)**;
-- Total: **40 encontros**;
-- Organização avaliativa: **2 unidades de 20 encontros**;
+- Total: **39 encontros**;
+- Organização avaliativa: **2 unidades**;
 - Stack: **TypeScript, Angular, NestJS, PostgreSQL/pgvector, Ollama e Docker**.
 
 ## Documentos principais
