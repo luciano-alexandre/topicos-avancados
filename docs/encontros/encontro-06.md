@@ -2,79 +2,36 @@
 
 ## Tema
 
-Integração entre uma API NestJS e o Ollama por meio de configuração externa,
-provider dedicado, DTO validado e tratamento explícito de falhas.
+Implementação passo a passo de uma API NestJS que valida uma mensagem, consulta
+o Ollama executado no Docker e devolve ao cliente um contrato simplificado.
 
 ## Objetivos
 
-- Explicar por que o frontend não deve acessar diretamente o modelo.
-- Separar controller, regra de aplicação e cliente do servidor de inferência.
+- Explicar por que o frontend deve acessar o modelo por meio do backend.
+- Separar controller, serviço de aplicação e cliente do Ollama.
 - Configurar URL, modelo e timeout fora do código-fonte.
-- Implementar uma rota NestJS que consome `/api/chat`.
-- Validar entrada, mapear resposta e traduzir erros de infraestrutura.
-- Testar o backend sem depender continuamente de uma geração real.
+- Validar o corpo da requisição antes de chamar a inferência.
+- Traduzir o contrato do Ollama para o contrato público da aplicação.
+- Diferenciar entrada inválida, timeout e indisponibilidade.
+- Testar o endpoint pelo Thunder Client.
 
-## Visão geral
+## Resultado esperado
 
-No Encontro 05, `curl` acumulou várias responsabilidades: montou a requisição,
-chamou o Ollama e exibiu a resposta. Em uma aplicação, essas responsabilidades
-precisam ser distribuídas.
+Ao final, a aplicação terá este fluxo:
 
 ```mermaid
 flowchart LR
-    C[Cliente] -->|POST /ia/responder| CT[Controller]
-    CT --> S[Aplicação]
+    C[Thunder Client] -->|POST /ia/responder| CT[Controller]
+    CT --> S[IaService]
     S --> P[OllamaProvider]
-    P -->|POST /api/chat| O[Ollama]
+    P -->|POST /api/chat| O[Ollama no Docker]
     O --> P
     P --> S
     S --> CT
     CT --> C
 ```
 
-O provider conhece o contrato do Ollama. O controller conhece o contrato
-público da aplicação. Essa fronteira evita que campos internos do provedor
-vazem para o frontend.
-
-## Por que não chamar o Ollama pelo Angular?
-
-Uma chamada direta pelo navegador:
-
-- expõe endereço, modelo e detalhes de infraestrutura;
-- dificulta autenticação, autorização e limites por usuário;
-- permite que o cliente altere instruções e parâmetros;
-- aumenta o risco de abuso do servidor;
-- mistura contrato da interface com contrato do provedor;
-- dificulta logs, auditoria, fallback e validação centralizada.
-
-```mermaid
-flowchart TD
-    A[Angular] -->|contrato público| N[NestJS]
-    N -->|contrato interno| O[Ollama]
-    N --> V[Validação]
-    N --> L[Logs e limites]
-    N --> R[Regras de negócio]
-```
-
-## Responsabilidades
-
-| Componente | Responsabilidade |
-|---|---|
-| DTO | definir e validar a entrada pública |
-| controller | receber HTTP e devolver o contrato público |
-| service | coordenar a operação da aplicação |
-| provider | adaptar o contrato interno para o Ollama |
-| ConfigService | fornecer URL, modelo e timeout |
-| filtro ou mapeamento de erro | impedir vazamento de detalhes internos |
-
-## Contrato público inicial
-
-### Requisição
-
-```http
-POST /ia/responder
-Content-Type: application/json
-```
+O endpoint público receberá:
 
 ```json
 {
@@ -82,12 +39,12 @@ Content-Type: application/json
 }
 ```
 
-### Resposta
+E devolverá um contrato controlado pelo backend:
 
 ```json
 {
   "resposta": "...",
-  "modelo": "identificador-configurado",
+  "modelo": "llama3.2:latest",
   "uso": {
     "tokensEntrada": 18,
     "tokensSaida": 64
@@ -95,13 +52,38 @@ Content-Type: application/json
 }
 ```
 
-O cliente não precisa receber todos os campos retornados pelo Ollama. Durações
-internas podem ser registradas pelo backend sem integrar o contrato público.
+## Por que colocar o NestJS entre o frontend e o Ollama?
 
-## Estrutura sugerida
+No Encontro 05, o navegador chamou o Ollama diretamente para tornar o fluxo
+HTTP visível. Essa arquitetura é adequada apenas para a demonstração. O backend
+precisa assumir responsabilidades que não devem ser controladas pelo usuário:
+
+- autenticação e autorização;
+- escolha do modelo permitido;
+- construção das instruções internas;
+- validação da entrada e da saída;
+- timeout e limites de uso;
+- logs, métricas e auditoria;
+- ocultação do endereço da infraestrutura;
+- troca futura do provedor sem alterar o frontend.
+
+```mermaid
+flowchart TD
+    A[Frontend] -->|contrato público| N[NestJS]
+    N --> V[Validação]
+    N --> R[Regras e limites]
+    N --> P[Provider de modelo]
+    P -->|contrato interno| O[Ollama]
+```
+
+## Organização da implementação
+
+Serão criados estes arquivos:
 
 ```text
 src/
+├── app.module.ts
+├── main.ts
 └── ia/
     ├── dto/
     │   └── responder.dto.ts
@@ -113,10 +95,30 @@ src/
     └── ia.module.ts
 ```
 
-O nome `modelo.provider.ts` será usado para uma interface interna. Assim, a
-regra de aplicação depende de uma abstração, não diretamente do Ollama.
+Cada arquivo terá uma responsabilidade. Evite colocar a chamada HTTP, a
+validação e o mapeamento da resposta diretamente no controller.
 
-## Dependências
+## Passo 1 — confirmar os pré-requisitos
+
+Antes de alterar o NestJS, confirme o Ollama:
+
+```bash
+docker compose ps
+docker compose exec ollama ollama list
+```
+
+No Thunder Client, execute `GET http://localhost:11434/api/tags`. Copie o nome
+completo do modelo, incluindo sua tag. Se o Ollama não responder diretamente,
+resolva essa camada antes de depurar o backend.
+
+### Por que começar pelo Ollama?
+
+O NestJS depende desse serviço. Testar a dependência isoladamente reduz o espaço
+de busca: se ela já falha, ainda não existe evidência de erro no código NestJS.
+
+## Passo 2 — instalar as dependências
+
+Na pasta do backend:
 
 ```bash
 npm install @nestjs/axios axios
@@ -124,62 +126,117 @@ npm install @nestjs/config
 npm install class-validator class-transformer
 ```
 
-O módulo HTTP oficial do NestJS encapsula Axios e fornece `HttpService`. Outras
-bibliotecas seriam possíveis, mas a turma utilizará uma opção comum para manter
-o exemplo uniforme.
+### Por que cada dependência existe?
 
-## Configuração externa
+| Dependência | Motivo |
+|---|---|
+| `@nestjs/axios` | integra o cliente HTTP Axios ao sistema de módulos e injeção do NestJS |
+| `axios` | executa efetivamente a chamada HTTP |
+| `@nestjs/config` | centraliza configurações obtidas do ambiente |
+| `class-validator` | declara regras de validação no DTO |
+| `class-transformer` | auxilia a transformação usada pelo `ValidationPipe` |
 
-### `.env.example`
+Não instale uma biblioteca de Ollama neste momento. Consumir a API HTTP
+explicitamente ajuda a compreender o contrato e reduz dependências específicas.
+
+## Passo 3 — criar a configuração do ambiente
+
+Crie `.env.example`:
 
 ```dotenv
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.2
+OLLAMA_MODEL=llama3.2:latest
 OLLAMA_TIMEOUT_MS=30000
 ```
 
-Quando NestJS e Ollama estiverem no mesmo Compose, a URL normalmente será
-`http://ollama:11434`. O valor pertence ao ambiente, não ao provider.
+Crie também o `.env` local com o modelo realmente instalado. O arquivo `.env`
+não deve ser enviado ao Git.
 
-### Carregamento da configuração
+### Por que não escrever esses valores no provider?
+
+- a URL muda entre execução local e Docker;
+- o modelo pode variar conforme o hardware;
+- o timeout pode ser diferente em desenvolvimento e produção;
+- alterar configuração não deve exigir recompilar o código.
+
+Se o NestJS executar no host e o Ollama no Docker com a porta publicada, use
+`http://localhost:11434`. Se ambos estiverem no mesmo Compose, o backend deverá
+usar o nome do serviço, normalmente `http://ollama:11434`.
+
+## Passo 4 — carregar a configuração no `AppModule`
+
+Atualize `src/app.module.ts`:
 
 ```ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { IaModule } from './ia/ia.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    IaModule,
   ],
 })
 export class AppModule {}
 ```
 
-Em produção, a presença e o formato das variáveis também devem ser validados na
-inicialização. Falhar cedo é melhor do que descobrir a ausência do modelo na
-primeira requisição de um usuário.
+### Explicação do código
 
-## Validação global
+- `ConfigModule.forRoot()` carrega as variáveis do processo e, por padrão, o
+  arquivo `.env` do diretório da aplicação;
+- `isGlobal: true` permite injetar `ConfigService` em outros módulos sem repetir
+  a importação;
+- `IaModule` agrupa os componentes relacionados à funcionalidade de IA;
+- `imports` declara módulos dos quais o `AppModule` depende.
+
+Uma evolução para produção deve validar as variáveis durante a inicialização.
+Falhar cedo é melhor do que descobrir uma configuração ausente durante a
+requisição de um usuário.
+
+## Passo 5 — habilitar a validação global
+
+Atualize `src/main.ts`:
 
 ```ts
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
 
-app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }),
-);
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+
+void bootstrap();
 ```
 
-- `whitelist` remove campos sem decoradores;
-- `forbidNonWhitelisted` rejeita campos inesperados;
-- `transform` permite transformar valores conforme o DTO.
+### Explicação do código
 
-## DTO de entrada
+- `NestFactory.create(AppModule)` inicializa a árvore de módulos;
+- `useGlobalPipes` faz todos os controllers passarem pelo mesmo processo de
+  validação;
+- `whitelist` mantém somente propriedades declaradas no DTO;
+- `forbidNonWhitelisted` rejeita propriedades extras em vez de ignorá-las;
+- `transform` permite transformar o objeto recebido para a classe do DTO;
+- `app.listen` inicia o servidor na porta configurada ou na porta `3000`;
+- `void bootstrap()` sinaliza que a Promise de inicialização foi disparada
+  intencionalmente.
+
+## Passo 6 — criar o DTO de entrada
+
+Crie `src/ia/dto/responder.dto.ts`:
 
 ```ts
 import { IsString, MaxLength, MinLength } from 'class-validator';
@@ -192,10 +249,22 @@ export class ResponderDto {
 }
 ```
 
-O limite de 2.000 caracteres é didático e deve ser ajustado ao caso de uso. Ele
-não equivale a 2.000 tokens.
+### Explicação do código
 
-## Contratos internos
+- o DTO define o contrato aceito pelo endpoint;
+- `@IsString()` rejeita números, objetos e arrays;
+- `@MinLength(1)` impede uma string vazia;
+- `@MaxLength(2000)` limita abuso e consumo acidental;
+- `!` informa ao TypeScript que o NestJS preencherá a propriedade após construir
+  e validar o DTO.
+
+O limite considera caracteres, não tokens. Espaços serão removidos pelo service;
+por isso, uma string contendo apenas espaços precisa de uma verificação adicional
+na regra de aplicação.
+
+## Passo 7 — definir a abstração do modelo
+
+Crie `src/ia/providers/modelo.provider.ts`:
 
 ```ts
 export interface GerarRespostaInput {
@@ -212,17 +281,32 @@ export interface GerarRespostaOutput {
 export interface ModeloProvider {
   gerar(input: GerarRespostaInput): Promise<GerarRespostaOutput>;
 }
+
+export const MODELO_PROVIDER = Symbol('MODELO_PROVIDER');
 ```
 
-A interface contém apenas o necessário para a aplicação. Nomes como
-`prompt_eval_count` permanecem confinados ao adaptador do Ollama.
+### Por que criar essa abstração?
 
-## Contrato do Ollama no provider
+`IaService` precisa de uma capacidade — gerar uma resposta — e não dos detalhes
+do Ollama. A interface:
+
+- define entrada e saída internas com nomes da aplicação;
+- impede que `prompt_eval_count` se espalhe pelo sistema;
+- permite substituir Ollama por outro adaptador;
+- possibilita um provider simulado nos testes.
+
+`MODELO_PROVIDER` é um token de injeção. Interfaces TypeScript não existem em
+tempo de execução; portanto, o container de dependências do NestJS precisa de um
+valor concreto para identificar qual implementação deverá fornecer.
+
+## Passo 8 — representar a resposta do Ollama
+
+No início de `src/ia/providers/ollama.provider.ts`, será usada esta interface:
 
 ```ts
 interface OllamaChatResponse {
   model: string;
-  message: {
+  message?: {
     role: string;
     content: string;
   };
@@ -232,22 +316,44 @@ interface OllamaChatResponse {
 }
 ```
 
-Uma interface TypeScript ajuda o compilador, mas não valida dados recebidos em
-tempo de execução. Em sistemas reais, a resposta externa também precisa de
-validação.
+### Por que existe outro contrato?
 
-## Implementação do `OllamaProvider`
+Esse tipo representa o formato externo. Ele utiliza os nomes devolvidos pelo
+Ollama. O provider converterá esse formato para `GerarRespostaOutput`.
+
+Uma interface TypeScript auxilia o compilador, mas não valida dados em tempo de
+execução. Por isso, o código ainda verificará se `message.content` existe.
+
+## Passo 9 — implementar o `OllamaProvider`
+
+Crie `src/ia/providers/ollama.provider.ts`:
 
 ```ts
+import { HttpService } from '@nestjs/axios';
 import {
   BadGatewayException,
   GatewayTimeoutException,
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { AxiosError } from 'axios';
+import axios from 'axios';
+import {
+  GerarRespostaInput,
+  GerarRespostaOutput,
+  ModeloProvider,
+} from './modelo.provider';
+
+interface OllamaChatResponse {
+  model: string;
+  message?: {
+    role: string;
+    content: string;
+  };
+  done: boolean;
+  prompt_eval_count?: number;
+  eval_count?: number;
+}
 
 @Injectable()
 export class OllamaProvider implements ModeloProvider {
@@ -268,13 +374,19 @@ export class OllamaProvider implements ModeloProvider {
         `${baseUrl}/api/chat`,
         {
           model,
-          messages: [{ role: 'user', content: input.mensagem }],
+          messages: [
+            {
+              role: 'user',
+              content: input.mensagem,
+            },
+          ],
           stream: false,
         },
         { timeout },
       );
 
       const content = response.data.message?.content?.trim();
+
       if (!content) {
         throw new BadGatewayException('Resposta inválida do modelo');
       }
@@ -286,30 +398,90 @@ export class OllamaProvider implements ModeloProvider {
         tokensSaida: response.data.eval_count,
       };
     } catch (error: unknown) {
-      if (error instanceof BadGatewayException) throw error;
+      if (error instanceof BadGatewayException) {
+        throw error;
+      }
 
-      const axiosError = error as AxiosError;
-      if (axiosError.code === 'ECONNABORTED') {
-        throw new GatewayTimeoutException('Tempo limite da inferência excedido');
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+          throw new GatewayTimeoutException(
+            'Tempo limite da inferência excedido',
+          );
+        }
+
+        if (error.code === 'ECONNREFUSED') {
+          throw new ServiceUnavailableException(
+            'Servidor de IA indisponível',
+          );
+        }
       }
-      if (axiosError.code === 'ECONNREFUSED') {
-        throw new ServiceUnavailableException('Servidor de IA indisponível');
-      }
+
       throw new BadGatewayException('Falha ao consultar o modelo');
     }
   }
 }
 ```
 
-O exemplo não deve registrar o prompt nem a resposta em logs por padrão. Esses
-campos podem conter dados pessoais ou sigilosos.
+### Explicação por partes
 
-## Service da aplicação
+#### `@Injectable()` e construtor
+
+`@Injectable()` permite que o NestJS construa a classe e injete `HttpService` e
+`ConfigService`. O provider não cria manualmente clientes ou lê arquivos.
+
+#### Configuração
+
+`getOrThrow` interrompe a operação quando URL ou modelo não existem. O operador
+`??` fornece 30 segundos somente quando o timeout não foi configurado. `Number`
+converte a variável de ambiente, originalmente textual.
+
+#### Chamada HTTP
+
+`axiosRef.post` é usado porque permite trabalhar diretamente com `async/await`.
+O generic `OllamaChatResponse` descreve o corpo esperado da resposta. O objeto
+enviado reproduz o contrato testado no Encontro 05 e desativa streaming para
+obter um único JSON.
+
+#### Verificação da resposta
+
+`?.` impede erro ao acessar uma propriedade ausente. `trim()` remove espaços
+externos. Uma resposta HTTP bem-sucedida sem conteúdo utilizável é tratada como
+falha do gateway, pois o backend não recebeu o contrato necessário.
+
+#### Mapeamento
+
+O retorno troca nomes externos por nomes internos:
+
+| Ollama | Aplicação |
+|---|---|
+| `message.content` | `resposta` |
+| `model` | `modelo` |
+| `prompt_eval_count` | `tokensEntrada` |
+| `eval_count` | `tokensSaida` |
+
+#### Tratamento de erros
+
+- `BadGatewayException` já criada pelo código deve ser preservada;
+- `axios.isAxiosError` verifica se o erro veio do cliente HTTP;
+- timeout se torna HTTP 504;
+- conexão recusada se torna HTTP 503;
+- outras falhas do provedor se tornam HTTP 502;
+- detalhes internos não são devolvidos ao cliente.
+
+O exemplo não registra prompts ou respostas em logs, pois podem conter dados
+pessoais ou sigilosos.
+
+## Passo 10 — implementar o service
+
+Crie `src/ia/ia.service.ts`:
 
 ```ts
-import { Inject, Injectable } from '@nestjs/common';
-
-export const MODELO_PROVIDER = Symbol('MODELO_PROVIDER');
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  GerarRespostaOutput,
+  MODELO_PROVIDER,
+  ModeloProvider,
+} from './providers/modelo.provider';
 
 @Injectable()
 export class IaService {
@@ -319,15 +491,34 @@ export class IaService {
   ) {}
 
   responder(mensagem: string): Promise<GerarRespostaOutput> {
-    return this.modelo.gerar({ mensagem: mensagem.trim() });
+    const mensagemNormalizada = mensagem.trim();
+
+    if (!mensagemNormalizada) {
+      throw new BadRequestException('A mensagem não pode conter apenas espaços');
+    }
+
+    return this.modelo.gerar({ mensagem: mensagemNormalizada });
   }
 }
 ```
 
-## Controller
+### Explicação do código
+
+- `@Inject(MODELO_PROVIDER)` associa a abstração a uma implementação registrada
+  no módulo;
+- o service não importa `OllamaProvider`, reduzindo o acoplamento;
+- `trim()` normaliza a mensagem em um único ponto;
+- a verificação adicional cobre a string formada somente por espaços;
+- o service coordena a regra e delega a inferência ao provider.
+
+## Passo 11 — implementar o controller
+
+Crie `src/ia/ia.controller.ts`:
 
 ```ts
 import { Body, Controller, Post } from '@nestjs/common';
+import { ResponderDto } from './dto/responder.dto';
+import { IaService } from './ia.service';
 
 @Controller('ia')
 export class IaController {
@@ -349,11 +540,31 @@ export class IaController {
 }
 ```
 
-## Módulo
+### Explicação do código
+
+- `@Controller('ia')` cria o prefixo `/ia`;
+- `@Post('responder')` completa a rota `/ia/responder`;
+- `@Body()` solicita que o NestJS converta o JSON para o DTO;
+- o controller delega a regra ao service;
+- o objeto retornado define o contrato público;
+- campos internos do Axios e do Ollama não chegam ao cliente.
+
+Controllers devem permanecer pequenos: protocolo HTTP entra, a aplicação é
+chamada e o contrato público sai.
+
+## Passo 12 — registrar os componentes no módulo
+
+Crie `src/ia/ia.module.ts`:
 
 ```ts
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { IaController } from './ia.controller';
+import { IaService } from './ia.service';
+import {
+  MODELO_PROVIDER,
+} from './providers/modelo.provider';
+import { OllamaProvider } from './providers/ollama.provider';
 
 @Module({
   imports: [HttpModule],
@@ -369,144 +580,236 @@ import { Module } from '@nestjs/common';
 export class IaModule {}
 ```
 
-Trocar `useClass` por outro adaptador permite testar outro servidor sem mudar o
-controller nem a regra da aplicação.
+### Explicação do código
 
-## Teste manual do backend
+- `HttpModule` disponibiliza `HttpService` para injeção;
+- `controllers` registra quem recebe as requisições;
+- `providers` registra o service e o adaptador;
+- `provide` declara o token solicitado pelo `IaService`;
+- `useClass` informa que `OllamaProvider` implementará esse token.
+
+Essa associação pode ser trocada em testes ou em outra infraestrutura sem
+alterar controller e service.
+
+## Passo 13 — iniciar a aplicação
+
+Com o Ollama em execução no Docker:
 
 ```bash
-curl http://localhost:3000/ia/responder \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "mensagem": "Explique em duas frases o que é um DTO."
-  }'
+npm run start:dev
 ```
 
-Teste também:
+O terminal deve indicar que a rota foi mapeada. Se a aplicação falhar durante a
+inicialização, verifique dependências, imports e variáveis antes de testar a API.
 
-1. corpo sem `mensagem`;
-2. texto vazio;
-3. campo adicional inesperado;
-4. texto acima do limite;
-5. Ollama interrompido;
-6. nome de modelo inexistente;
-7. timeout inferior ao tempo necessário.
+## Passo 14 — testar pelo Thunder Client
 
-## Fluxo de sucesso e falha
+Crie uma coleção `API NestJS` e uma requisição:
+
+| Campo | Valor |
+|---|---|
+| nome | `Responder com IA` |
+| método | `POST` |
+| URL | `http://localhost:3000/ia/responder` |
+| header | `Content-Type: application/json` |
+| body | `JSON` |
+
+```json
+{
+  "mensagem": "Explique em duas frases o que é um DTO."
+}
+```
+
+Selecione **Send** e confirme:
+
+1. status HTTP `200`;
+2. presença de `resposta` e `modelo`;
+3. presença de `uso.tokensEntrada` e `uso.tokensSaida`;
+4. ausência de `prompt_eval_count`, `eval_count` e outros campos internos.
+
+### Por que testar primeiro o contrato de sucesso?
+
+Ele confirma a integração completa. Depois disso, os testes negativos isolam
+as regras de validação e o tratamento de infraestrutura.
+
+## Passo 15 — executar testes negativos
+
+Duplique a requisição no Thunder Client e execute:
+
+| Caso | Corpo ou condição | Resultado esperado |
+|---|---|---|
+| mensagem ausente | `{}` | `400 Bad Request` |
+| tipo incorreto | `{"mensagem": 123}` | `400 Bad Request` |
+| campo adicional | `{"mensagem":"Olá","modelo":"outro"}` | `400 Bad Request` |
+| somente espaços | `{"mensagem":"   "}` | `400 Bad Request` |
+| modelo inexistente | alterar temporariamente `OLLAMA_MODEL` | `502 Bad Gateway` |
+| Ollama indisponível | interromper o contêiner | `503 Service Unavailable` |
+| timeout | usar temporariamente um limite muito baixo | `504 Gateway Timeout`, se reproduzido |
+
+Para testar indisponibilidade em ambiente individual:
+
+```bash
+docker compose stop ollama
+docker compose start ollama
+```
+
+Não interrompa um serviço compartilhado. Se o timeout não ocorrer, registre que
+a condição não foi reproduzida em vez de inventar um resultado.
+
+## Fluxo consolidado de sucesso e falha
 
 ```mermaid
 flowchart TD
     A[POST /ia/responder] --> B{DTO válido?}
     B -->|não| C[400]
-    B -->|sim| D[Chamar provider]
-    D --> E{Ollama acessível?}
-    E -->|não| F[503 ou 504]
-    E -->|sim| G{Resposta válida?}
-    G -->|não| H[502]
-    G -->|sim| I[Mapear contrato público]
-    I --> J[200]
+    B -->|sim| D{Mensagem útil após trim?}
+    D -->|não| C
+    D -->|sim| E[Chamar ModeloProvider]
+    E --> F{Ollama acessível?}
+    F -->|não| G[503 ou 504]
+    F -->|sim| H{Resposta utilizável?}
+    H -->|não| I[502]
+    H -->|sim| J[Mapear contrato público]
+    J --> K[200]
 ```
 
-## Teste sem modelo real
+## Passo 16 — testar o service sem modelo real
 
-Um teste do service pode substituir o provider por um objeto controlado:
+Um teste unitário deve substituir o provider por uma implementação controlada:
 
 ```ts
-const provider: ModeloProvider = {
-  gerar: jest.fn().mockResolvedValue({
-    resposta: 'Resposta simulada',
-    modelo: 'modelo-de-teste',
-    tokensEntrada: 10,
-    tokensSaida: 4,
-  }),
-};
+import { Test } from '@nestjs/testing';
+import { IaService } from './ia.service';
+import {
+  MODELO_PROVIDER,
+  ModeloProvider,
+} from './providers/modelo.provider';
+
+describe('IaService', () => {
+  let service: IaService;
+  let provider: jest.Mocked<ModeloProvider>;
+
+  beforeEach(async () => {
+    provider = {
+      gerar: jest.fn(),
+    };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        IaService,
+        {
+          provide: MODELO_PROVIDER,
+          useValue: provider,
+        },
+      ],
+    }).compile();
+
+    service = moduleRef.get(IaService);
+  });
+
+  it('normaliza a mensagem e devolve o resultado do provider', async () => {
+    provider.gerar.mockResolvedValue({
+      resposta: 'Resposta simulada',
+      modelo: 'modelo-de-teste',
+      tokensEntrada: 10,
+      tokensSaida: 4,
+    });
+
+    await expect(service.responder('  Olá  ')).resolves.toEqual({
+      resposta: 'Resposta simulada',
+      modelo: 'modelo-de-teste',
+      tokensEntrada: 10,
+      tokensSaida: 4,
+    });
+
+    expect(provider.gerar).toHaveBeenCalledWith({ mensagem: 'Olá' });
+  });
+});
 ```
 
-Esse teste verifica a lógica da aplicação. Um teste separado deve verificar a
-integração real com o Ollama. Misturar os dois torna a suíte lenta e instável.
+### Por que usar `useValue` no teste?
+
+O teste precisa controlar o comportamento do provider. `useValue` associa o
+mesmo token de produção a um objeto simulado. Assim:
+
+- não é necessário iniciar Docker ou carregar um modelo;
+- a resposta é rápida e previsível;
+- o teste verifica somente a regra do service;
+- erros de infraestrutura ficam para testes de integração separados.
 
 ## O que registrar em logs
 
-Registre, quando apropriado:
+Quando necessário, registre:
 
 - identificador de correlação;
-- rota e status;
-- modelo e versão configurados;
+- rota e status HTTP;
+- modelo configurado;
 - duração e timeout;
 - contagens de tokens;
 - categoria técnica da falha.
 
-Evite registrar automaticamente:
-
-- prompt completo;
-- resposta completa;
-- credenciais;
-- documentos do usuário;
-- stack trace entregue ao frontend.
+Evite registrar automaticamente prompt completo, resposta completa,
+credenciais, documentos do usuário ou stack trace entregue ao frontend.
 
 ## Erros conceituais comuns
 
-### Retornar a resposta inteira do Ollama
+### Chamar o Ollama no controller
 
-Isso acopla o frontend a um fornecedor e expõe campos internos.
+Isso mistura HTTP público, regra da aplicação e contrato externo.
 
-### Deixar o modelo no DTO do cliente
+### Permitir que o cliente escolha o modelo
 
-O cliente poderia selecionar um artefato caro, incompatível ou não autorizado.
+O usuário poderia selecionar um modelo não autorizado ou incompatível com o
+hardware disponível.
 
-### Capturar toda exceção como erro 500
+### Retornar a resposta completa do Axios
 
-Entrada inválida, timeout e indisponibilidade possuem significados distintos.
+Isso expõe detalhes internos e acopla o frontend ao Ollama.
 
-### Confundir tipagem com validação
+### Confundir interface com validação
 
-Interfaces TypeScript desaparecem em tempo de execução e não tornam dados
-externos confiáveis.
+Interfaces TypeScript desaparecem em tempo de execução. Dados externos ainda
+precisam ser verificados.
 
 ### Não definir timeout
 
-Uma geração pode manter conexões e recursos ocupados indefinidamente.
+Uma geração pode manter conexão e recursos ocupados por tempo excessivo.
 
-## Demonstração guiada
+## Entrega individual
 
-1. testar o Ollama diretamente;
-2. iniciar o NestJS com configuração válida;
-3. chamar `/ia/responder`;
-4. comparar contrato público e resposta original;
-5. interromper o Ollama e observar o erro;
-6. reduzir o timeout e repetir;
-7. substituir o provider por um mock em teste;
-8. confirmar que o controller permanece inalterado.
+Entregue:
 
-## Questões para revisão
-
-1. Por que o controller não deve conhecer `prompt_eval_count`?
-2. O que se ganha com `ModeloProvider`?
-3. Por que a URL deve vir da configuração?
-4. Qual a diferença entre 400, 502, 503 e 504 neste fluxo?
-5. Por que uma interface TypeScript não valida a resposta externa?
-6. Quais dados podem ser registrados sem expor conteúdo sensível?
-7. Que parte deve ser testada com mock e qual exige integração real?
+1. `.env.example` sem segredos;
+2. arquivos do módulo `ia`;
+3. captura da requisição válida no Thunder Client;
+4. tabela dos testes negativos preenchida;
+5. teste unitário do `IaService`;
+6. identificação do modelo utilizado;
+7. explicação curta da responsabilidade de DTO, controller, service e provider.
 
 ## Checklist de aprendizagem
 
-- [ ] justificar a presença do backend entre frontend e modelo;
-- [ ] validar o DTO de entrada;
+- [ ] justificar a presença do backend entre frontend e Ollama;
 - [ ] configurar URL, modelo e timeout externamente;
-- [ ] encapsular o Ollama em um provider;
-- [ ] mapear a resposta para um contrato público;
-- [ ] distinguir falhas de entrada, gateway, serviço e timeout;
-- [ ] testar a regra sem exigir inferência real.
+- [ ] validar o DTO e rejeitar propriedades extras;
+- [ ] explicar o token `MODELO_PROVIDER`;
+- [ ] encapsular `/api/chat` no `OllamaProvider`;
+- [ ] mapear o contrato externo para o contrato interno;
+- [ ] manter o controller independente do Ollama;
+- [ ] distinguir erros 400, 502, 503 e 504;
+- [ ] testar o service sem executar inferência real.
 
 ## Síntese do encontro
 
-Integrar um modelo não significa espalhar chamadas HTTP pela aplicação. Uma
-fronteira explícita permite validar, observar, testar e substituir o provedor.
-No próximo encontro, essa integração será consolidada em uma atividade prática.
+A implementação passo a passo evidencia que integrar IA não significa espalhar
+chamadas HTTP. DTO, controller, service, provider e configuração possuem papéis
+distintos. Essa separação torna a aplicação validável, testável e preparada para
+trocar a infraestrutura sem modificar seu contrato público.
 
 ## Fontes oficiais de apoio
 
 - [Módulo HTTP do NestJS](https://docs.nestjs.com/techniques/http-module)
 - [Configuração no NestJS](https://docs.nestjs.com/techniques/configuration)
 - [Validação no NestJS](https://docs.nestjs.com/techniques/validation)
+- [Testes no NestJS](https://docs.nestjs.com/fundamentals/testing)
 - [Rota de chat do Ollama](https://docs.ollama.com/api/chat)
