@@ -12,7 +12,7 @@ conteúdos seguintes foram antecipados em um encontro.
 | [04](encontros/encontro-04.md) | U1 | Contexto, geração e limitações dos LLMs |
 | [05](encontros/encontro-05.md) | U1 | Ollama, API local e Docker |
 | [06](encontros/encontro-06.md) | U1 | NestJS consumindo inferência local |
-| [07](encontros/encontro-07.md) | U1 | Prática: inferência local integrada ao NestJS |
+| [07](encontros/encontro-07.md) | U1 | Atividade prática: classificação de chamados com IA |
 | [08](encontros/encontro-08.md) | U1 | Streaming para Angular e cancelamento |
 | [09](encontros/encontro-09.md) | U1 | Contexto, histórico, sessão e limites |
 | [10](encontros/encontro-10.md) | U1 | Timeout, retry, fallback e cache |
