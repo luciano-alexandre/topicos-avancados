@@ -7,6 +7,8 @@ Angular e cancelamento cooperativo da geração.
 
 ## Objetivos
 
+- Criar e executar a primeira aplicação Angular da disciplina.
+- Reconhecer a estrutura mínima de uma aplicação Angular standalone.
 - Diferenciar resposta completa de resposta em streaming.
 - Interpretar o NDJSON produzido pelo Ollama.
 - Ampliar `ModeloProvider` sem acoplar a aplicação ao fornecedor.
@@ -100,7 +102,167 @@ frontend/src/app/ia/
 └── chat-stream.component.ts
 ```
 
-## Passo 1 — confirmar o streaming do Ollama
+Até aqui, a turma possui o backend NestJS iniciado no Encontro 06, mas ainda não
+possui um projeto Angular. Portanto, a primeira parte deste encontro cria o
+frontend do zero. Os comandos Angular devem ser executados em outro terminal,
+sem encerrar o NestJS nem o contêiner do Ollama. Assim como o Ollama, o Angular
+será criado e executado com Docker; o computador não precisa ter Node.js, npm ou
+Angular CLI instalados.
+
+## Passo 1 — verificar o ambiente de desenvolvimento
+
+No terminal integrado do VS Code, execute:
+
+```bash
+docker --version
+docker compose version
+docker compose ps
+```
+
+Confirme que Docker e Docker Compose estão disponíveis e que o contêiner do
+Ollama continua ativo. O Node.js será fornecido pela imagem do contêiner. Essa
+padronização reduz diferenças entre computadores do laboratório e evita
+instalações globais que exigem permissão administrativa.
+
+## Passo 2 — criar o projeto Angular dentro de um contêiner
+
+Abra o terminal na pasta que deverá conter o frontend e execute:
+
+```bash
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --env HOME=/tmp \
+  --volume "$PWD:/workspace" \
+  --workdir /workspace \
+  node:22-alpine \
+  npx @angular/cli@latest new frontend \
+    --standalone \
+    --routing=false \
+    --style=css \
+    --skip-git \
+    --skip-install
+```
+
+Quando o CLI perguntar sobre recursos adicionais, mantenha as opções padrão. O
+contêiner é removido depois do comando, mas os arquivos permanecem no diretório
+montado. `--skip-install` evita criar `node_modules` no host; as dependências
+serão instaladas durante a construção da imagem.
+
+As opções usadas possuem os seguintes objetivos:
+
+- `frontend` define o nome da pasta e da aplicação;
+- `--standalone` usa componentes standalone, sem criar `AppModule`;
+- `--routing=false` evita adicionar roteamento antes de ele ser necessário;
+- `--style=css` mantém os estilos em CSS simples;
+- `--skip-git` evita criar um segundo repositório dentro do projeto da atividade.
+- `--skip-install` adia a instalação para o Dockerfile.
+
+`--user` faz com que os arquivos pertençam ao usuário atual em Linux e macOS.
+No PowerShell, `$(id -u)` e `$PWD` precisam ser adaptados ao ambiente. Em um
+laboratório padronizado, o professor pode fornecer o projeto-base já gerado.
+
+> Se a rede do laboratório bloquear o download, o professor deve disponibilizar
+> previamente um projeto gerado ou o cache de dependências. Copiar somente a
+> pasta `node_modules` entre sistemas operacionais não é uma solução confiável.
+
+## Passo 3 — preparar e executar o Angular com Docker Compose
+
+Crie `frontend/Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 4200
+
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--poll", "1000"]
+```
+
+Crie `frontend/.dockerignore`:
+
+```text
+node_modules
+.angular
+dist
+```
+
+No `compose.yaml` já utilizado pelo Ollama, preserve os serviços existentes e
+acrescente:
+
+```yaml
+services:
+  frontend:
+    build:
+      context: ./frontend
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      HOME: /tmp
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  frontend_node_modules:
+```
+
+O volume nomeado impede que o bind mount esconda as dependências instaladas na
+imagem. `--host 0.0.0.0` permite acessar o servidor pela porta publicada, e
+`--poll 1000` torna a detecção de alterações mais confiável em volumes montados.
+O usuário numérico evita que arquivos gerados pelo contêiner fiquem pertencendo
+ao administrador. Se `id -u` ou `id -g` retornar um valor diferente de `1000`,
+crie um arquivo `.env` ao lado do `compose.yaml` e informe os valores reais:
+
+```dotenv
+LOCAL_UID=1001
+LOCAL_GID=1001
+```
+
+Substitua `1001` pelos números exibidos no computador. Em Docker Desktop para
+Windows ou macOS, normalmente os valores padrão podem ser mantidos.
+
+Construa e inicie somente o novo serviço:
+
+```bash
+docker compose up --build -d frontend
+docker compose logs -f frontend
+```
+
+Quando o log indicar que a compilação terminou, acesse
+`http://localhost:4200`. Para sair da visualização dos logs sem interromper o
+contêiner, pressione `Ctrl+C`.
+
+Localize os arquivos principais:
+
+```text
+frontend/
+├── angular.json
+├── package.json
+└── src/
+    ├── main.ts
+    └── app/
+        ├── app.ts
+        ├── app.html
+        └── app.css
+```
+
+Em versões anteriores do CLI, os três últimos arquivos podem se chamar
+`app.component.ts`, `app.component.html` e `app.component.css`. A função é a
+mesma: `main.ts` inicializa a aplicação, o arquivo TypeScript define o componente
+raiz, o HTML define sua interface e o CSS define sua apresentação.
+
+Antes de avançar, altere uma frase do HTML inicial e confirme que o navegador é
+atualizado. Isso separa eventuais problemas de instalação dos problemas do
+streaming que serão estudados a seguir.
+
+## Passo 4 — confirmar o streaming do Ollama
 
 No Thunder Client, duplique a requisição `POST /api/chat` do Encontro 05 e
 altere apenas:
@@ -123,7 +285,7 @@ linhas e localize `done: true` no último objeto. Se a interface apresentar tudo
 somente no final, confirme o comportamento nos logs e registre a limitação do
 cliente antes de concluir que o Ollama não transmitiu incrementalmente.
 
-## Passo 2 — ampliar o contrato interno
+## Passo 5 — ampliar o contrato interno
 
 Em `modelo.provider.ts`, acrescente:
 
@@ -150,7 +312,7 @@ export interface ModeloProvider {
 `AbortSignal` transporta a solicitação de cancelamento sem depender do Angular,
 Express ou Axios no contrato da aplicação.
 
-## Passo 3 — tipar os fragmentos externos
+## Passo 6 — tipar os fragmentos externos
 
 Em `ollama.provider.ts`, acrescente:
 
@@ -167,7 +329,7 @@ interface OllamaStreamChunk {
 Esse tipo representa cada linha externa. Ele não substitui validação em tempo
 de execução, mas documenta os campos que o parser utilizará.
 
-## Passo 4 — implementar o parser NDJSON
+## Passo 7 — implementar o parser NDJSON
 
 Adicione uma função privada ou auxiliar:
 
@@ -200,7 +362,7 @@ geraria uma falha artificial.
 dado. A atividade valida somente o mínimo necessário; um sistema de produção
 pode usar um schema de runtime.
 
-## Passo 5 — implementar `gerarStream`
+## Passo 8 — implementar `gerarStream`
 
 Acrescente ao `OllamaProvider`:
 
@@ -275,7 +437,7 @@ A lógica de mapeamento de erros do método `gerar` deve ser reutilizada ou
 extraída para uma função comum. Não exponha mensagens internas do Ollama ao
 cliente em produção.
 
-## Passo 6 — ampliar o service
+## Passo 9 — ampliar o service
 
 Em `ia.service.ts`:
 
@@ -297,7 +459,7 @@ gerarStream(mensagem: string, signal: AbortSignal): AsyncIterable<string> {
 O service continua responsável pela regra de normalização. Ele não sabe que o
 fornecedor usa NDJSON.
 
-## Passo 7 — criar o endpoint de streaming
+## Passo 10 — criar o endpoint de streaming
 
 O NestJS precisa escrever cada evento assim que ele estiver disponível. Para
 isso, esta rota utiliza a resposta nativa do Express:
@@ -375,7 +537,7 @@ Depois que os headers e o status `200` foram enviados, não é possível trocar 
 status para `500`. A falha precisa ser representada como um evento `error` no
 fluxo.
 
-## Passo 8 — habilitar o Angular no ambiente local
+## Passo 11 — habilitar o Angular no ambiente local
 
 Se Angular e NestJS usam origens diferentes, configure CORS de forma restrita em
 `main.ts`:
@@ -390,12 +552,19 @@ app.enableCors({
 Em produção, origem e métodos devem vir de configuração. Não use `origin: '*'`
 quando a aplicação trabalhar com credenciais.
 
-## Passo 9 — criar o serviço Angular
+## Passo 12 — criar o serviço Angular
 
 O `HttpClient` é adequado para muitas chamadas, mas neste exercício será usado
 `fetch` diretamente para controlar `ReadableStream` e `AbortSignal`.
 
-Crie `ia-stream.service.ts`:
+Dentro de `frontend`, gere a pasta e o serviço:
+
+```bash
+docker compose exec frontend \
+  npx ng generate service ia/ia-stream --type=service --skip-tests
+```
+
+Edite o arquivo criado em `src/app/ia/ia-stream.service.ts`:
 
 ```ts
 import { Injectable } from '@angular/core';
@@ -460,7 +629,16 @@ export class IaStreamService {
 O frontend também mantém um buffer porque os limites dos fragmentos HTTP não
 precisam coincidir com as quebras de linha escritas pelo backend.
 
-## Passo 10 — criar o componente Angular
+## Passo 13 — criar o componente Angular
+
+Gere o componente standalone:
+
+```bash
+docker compose exec frontend \
+  npx ng generate component ia/chat-stream --standalone --type=component --skip-tests
+```
+
+Substitua o conteúdo TypeScript gerado pelo código a seguir:
 
 ```ts
 import { Component, inject, signal } from '@angular/core';
@@ -524,7 +702,7 @@ export class ChatStreamComponent {
 renderizada à medida que o signal muda. `AbortController` pertence à execução
 corrente e é descartado ao final.
 
-## Passo 11 — criar o template
+## Passo 14 — criar o template e exibi-lo na aplicação
 
 ```html
 <form (ngSubmit)="enviar()">
@@ -558,7 +736,38 @@ O botão de cancelar não deve submeter o formulário. `aria-live` permite que a
 atualização seja anunciada, embora grandes fluxos possam exigir uma estratégia
 de acessibilidade mais cuidadosa.
 
-## Passo 12 — verificar a propagação do cancelamento
+Agora substitua o template do componente raiz, `src/app/app.html` — ou
+`app.component.html`, conforme a versão do CLI — por:
+
+```html
+<main>
+  <h1>Chat local com streaming</h1>
+  <app-chat-stream />
+</main>
+```
+
+No componente raiz, importe e registre `ChatStreamComponent` no array `imports`:
+
+```ts
+import { Component } from '@angular/core';
+import { ChatStreamComponent } from './ia/chat-stream.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [ChatStreamComponent],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App {}
+```
+
+Se o projeto gerado usar `AppComponent` e arquivos com o prefixo
+`app.component`, preserve esses nomes e altere apenas `imports` e o caminho de
+`ChatStreamComponent`. O importante é que o componente raiz conheça o seletor
+`app-chat-stream` usado em seu template.
+
+## Passo 15 — verificar a propagação do cancelamento
 
 1. envie uma solicitação que produza resposta longa;
 2. aguarde alguns incrementos;
@@ -621,15 +830,21 @@ Após o início da resposta, falhas precisam ser eventos do protocolo de stream.
 
 Implemente o fluxo completo e entregue:
 
-1. alterações no provider, service e controller;
-2. serviço e componente Angular;
-3. captura da guia **Network** durante o streaming;
-4. evidência de cancelamento nos dois lados;
-5. tabela dos sete testes;
-6. explicação de como os dois buffers evitam JSON incompleto.
+1. `Dockerfile`, `.dockerignore` e serviço `frontend` no `compose.yaml`;
+2. projeto Angular executando em `http://localhost:4200` pelo Docker Compose;
+3. alterações no provider, service e controller;
+4. serviço e componente Angular;
+5. captura da guia **Network** durante o streaming;
+6. evidência de cancelamento nos dois lados;
+7. tabela dos sete testes;
+8. explicação de como os dois buffers evitam JSON incompleto.
 
 ## Checklist de aprendizagem
 
+- [ ] criar e executar uma aplicação Angular standalone;
+- [ ] criar e subir o frontend exclusivamente com Docker;
+- [ ] explicar o bind mount e o volume de `node_modules`;
+- [ ] identificar o componente raiz e registrar um componente filho;
 - [ ] diferenciar JSON único e NDJSON;
 - [ ] implementar `AsyncIterable` no contrato interno;
 - [ ] processar linhas sem presumir fronteiras de rede;
@@ -648,6 +863,8 @@ camadas para liberar recursos.
 
 ## Fontes oficiais de apoio
 
+- [Configuração local do Angular](https://angular.dev/tools/cli/setup-local)
+- [Estrutura de arquivos do Angular](https://angular.dev/reference/configs/file-structure)
 - [Streaming no Ollama](https://docs.ollama.com/capabilities/streaming)
 - [Rota de chat do Ollama](https://docs.ollama.com/api/chat)
 - [Controllers no NestJS](https://docs.nestjs.com/controllers)
