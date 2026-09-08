@@ -88,26 +88,6 @@ Em caso de falha depois do primeiro incremento:
 
 Essa adaptação impede o Angular de depender de campos específicos do Ollama.
 
-## Arquivos que serão alterados
-
-```text
-backend/src/ia/
-├── providers/modelo.provider.ts
-├── providers/ollama.provider.ts
-├── ia.service.ts
-└── ia.controller.ts
-
-frontend/src/app/ia/
-├── ia-stream.service.ts
-└── chat-stream.component.ts
-```
-
-Até aqui, a turma possui o backend NestJS iniciado no Encontro 06, mas ainda não
-possui um projeto Angular. Portanto, a primeira parte deste encontro cria o
-frontend do zero. Os comandos Angular devem ser executados em outro terminal,
-sem encerrar o NestJS nem o contêiner do Ollama. Assim como o Ollama, o Angular
-será criado e executado com Docker; o computador não precisa ter Node.js, npm ou
-Angular CLI instalados.
 
 ## Passo 1 — verificar o ambiente de desenvolvimento
 
@@ -161,9 +141,6 @@ As opções usadas possuem os seguintes objetivos:
 No PowerShell, `$(id -u)` e `$PWD` precisam ser adaptados ao ambiente. Em um
 laboratório padronizado, o professor pode fornecer o projeto-base já gerado.
 
-> Se a rede do laboratório bloquear o download, o professor deve disponibilizar
-> previamente um projeto gerado ou o cache de dependências. Copiar somente a
-> pasta `node_modules` entre sistemas operacionais não é uma solução confiável.
 
 ## Passo 3 — preparar e executar o Angular com Docker Compose
 
@@ -792,74 +769,6 @@ sequenceDiagram
 Cancelar somente a atualização visual não é suficiente: isso desperdiçaria CPU,
 GPU e memória com uma resposta que ninguém mais consumirá.
 
-## Testes obrigatórios
-
-| Caso | Ação | Evidência esperada |
-|---:|---|---|
-| 1 | mensagem curta | texto aparece gradualmente e termina em `done` |
-| 2 | mensagem vazia | backend responde 400 antes do streaming |
-| 3 | resposta longa | vários eventos `delta` são acumulados em ordem |
-| 4 | cancelar após alguns trechos | estado `cancelled` e conexão encerrada |
-| 5 | Ollama indisponível | erro antes do primeiro trecho |
-| 6 | falha simulada após início | evento `error` no fluxo |
-| 7 | caracteres acentuados | texto não apresenta bytes corrompidos |
-
-## Erros comuns
-
-### Aplicar `JSON.parse()` ao corpo inteiro
-
-NDJSON contém vários objetos, não um documento JSON único.
-
-### Presumir que um chunk é uma linha
-
-A rede pode dividir ou agrupar dados em qualquer ponto.
-
-### Acumular tudo no backend
-
-Isso elimina o benefício de entrega incremental.
-
-### Cancelar apenas no Angular
-
-O Ollama continuaria consumindo recursos.
-
-### Tentar mudar o status depois dos headers
-
-Após o início da resposta, falhas precisam ser eventos do protocolo de stream.
-
-## Atividade individual
-
-Implemente o fluxo completo e entregue:
-
-1. `Dockerfile`, `.dockerignore` e serviço `frontend` no `compose.yaml`;
-2. projeto Angular executando em `http://localhost:4200` pelo Docker Compose;
-3. alterações no provider, service e controller;
-4. serviço e componente Angular;
-5. captura da guia **Network** durante o streaming;
-6. evidência de cancelamento nos dois lados;
-7. tabela dos sete testes;
-8. explicação de como os dois buffers evitam JSON incompleto.
-
-## Checklist de aprendizagem
-
-- [ ] criar e executar uma aplicação Angular standalone;
-- [ ] criar e subir o frontend exclusivamente com Docker;
-- [ ] explicar o bind mount e o volume de `node_modules`;
-- [ ] identificar o componente raiz e registrar um componente filho;
-- [ ] diferenciar JSON único e NDJSON;
-- [ ] implementar `AsyncIterable` no contrato interno;
-- [ ] processar linhas sem presumir fronteiras de rede;
-- [ ] escrever incrementos no NestJS;
-- [ ] acumular texto progressivamente no Angular;
-- [ ] propagar `AbortSignal` até o Ollama;
-- [ ] representar erro após início como evento;
-- [ ] testar conclusão, falha e cancelamento.
-
-## Síntese
-
-Streaming é um protocolo ponta a ponta. Só existe entrega incremental quando o
-Ollama produz fragmentos, o backend os encaminha sem buffering e o frontend os
-processa progressivamente. O cancelamento também precisa atravessar todas essas
-camadas para liberar recursos.
 
 ## Fontes oficiais de apoio
 
