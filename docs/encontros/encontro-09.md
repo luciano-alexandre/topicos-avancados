@@ -566,52 +566,6 @@ Content-Type: application/json
 }
 ```
 
-## Passo 11 — observar o crescimento do contexto
-
-Envie pelo menos seis turnos na mesma sessão e registre:
-
-| Turno | Mensagens armazenadas | Histórico enviado | `prompt_eval_count` | Observação |
-|---:|---:|---:|---:|---|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
-| 6 | | | | |
-
-Para preencher `prompt_eval_count`, preserve a métrica internamente ou registre-a
-em log técnico sem conteúdo sensível. Observe que o crescimento pode não ser
-linear por causa da tokenização e da remoção de turnos antigos.
-
-## Passo 12 — testar limites e isolamento
-
-| Caso | Resultado esperado |
-|---|---|
-| sessão inexistente | 404 |
-| sessão expirada | 410 |
-| mensagem vazia | 400 |
-| mensagem acima do limite | 400 |
-| duas requisições simultâneas na mesma sessão | uma delas recebe 409 |
-| mesma pergunta em duas sessões | históricos independentes |
-| falha do Ollama | par não é salvo |
-| exclusão seguida de consulta | sessão não está mais disponível |
-
-## Privacidade e retenção
-
-Histórico de conversa pode conter dados pessoais, código privado ou documentos.
-Uma política real precisa definir:
-
-- finalidade do armazenamento;
-- base e autorização para tratamento;
-- prazo de retenção;
-- criptografia e controle de acesso;
-- conteúdo permitido em logs;
-- exclusão solicitada pelo usuário;
-- uso ou não dos dados para avaliação e treinamento.
-
-Executar o modelo localmente reduz envio a terceiros, mas não elimina riscos no
-backend, banco, logs, backups ou interface.
-
 ## Estratégias quando o contexto cresce
 
 ```mermaid
