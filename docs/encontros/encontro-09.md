@@ -298,6 +298,79 @@ export class ConversasRepository {
 }
 ```
 
+### Como o UUID e o `sessionId` são gerados?
+
+O identificador é criado nesta linha do método `criar()`:
+
+```ts
+id: randomUUID(),
+```
+
+`randomUUID()` é uma função do módulo nativo `node:crypto`. Ela gera um UUID
+aleatório versão 4, como:
+
+```text
+3f6d47cb-70d1-45b8-93e8-fc24fba04c2a
+```
+
+Não é necessário instalar a biblioteca `uuid`, pois o próprio Node.js fornece a
+função. O import usado no início do arquivo é:
+
+```ts
+import { randomUUID } from 'node:crypto';
+```
+
+UUID é o formato do identificador gerado. `sessionId` é o nome dado a esse
+identificador no contrato HTTP. Portanto, neste exercício, eles representam o
+mesmo valor em momentos diferentes:
+
+```mermaid
+flowchart LR
+    A[POST /conversas] --> B[Controller]
+    B --> C[Service criar]
+    C --> D[Repository criar]
+    D --> E[randomUUID]
+    E --> F[Conversa com id]
+    F --> G[Map usa id como chave]
+    F --> H[Resposta com sessionId]
+```
+
+O fluxo completo é:
+
+1. o cliente envia `POST /conversas`, sem precisar criar um identificador;
+2. o controller chama `ConversasService.criar()`;
+3. o service chama `ConversasRepository.criar()`;
+4. o repository executa `randomUUID()` e armazena a conversa no `Map`, usando o
+   UUID como chave;
+5. o controller renomeia `conversation.id` para `sessionId` na resposta pública;
+6. o cliente guarda esse valor e o envia nas próximas URLs.
+
+Exemplo da criação:
+
+```http
+POST http://localhost:3000/conversas
+```
+
+Resposta:
+
+```json
+{
+  "sessionId": "3f6d47cb-70d1-45b8-93e8-fc24fba04c2a",
+  "expiraEmMinutos": 30
+}
+```
+
+Uso do valor retornado:
+
+```http
+POST http://localhost:3000/conversas/3f6d47cb-70d1-45b8-93e8-fc24fba04c2a/mensagens
+```
+
+O UUID reduz drasticamente a chance de colisão e evita um contador previsível,
+mas não funciona como autenticação. Qualquer cliente que obtenha o `sessionId`
+poderia tentar acessar a conversa. Em produção, o backend ainda deve validar o
+usuário autenticado e a propriedade da sessão.
+
 ### Limitações do `Map`
 
 - todas as sessões desaparecem ao reiniciar o processo;
