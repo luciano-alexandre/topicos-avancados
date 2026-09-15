@@ -15,14 +15,14 @@ conteúdos seguintes foram antecipados em um encontro.
 | [07](encontros/encontro-07.md) | U1 | Atividade prática: classificação de chamados com IA |
 | [08](encontros/encontro-08.md) | U1 | Streaming para Angular e cancelamento |
 | [09](encontros/encontro-09.md) | U1 | Contexto, histórico, sessão e limites |
-| [10](encontros/encontro-10.md) | U1 | Timeout, retry, fallback e cache |
-| [11](encontros/encontro-11.md) | U1 | Engenharia de prompts: estrutura, estratégias e templates |
-| [12](encontros/encontro-12.md) | U1 | Versionamento, testes e redução de alucinações |
-| [13](encontros/encontro-13.md) | U1 | Structured output, JSON Schema e validação |
-| [14](encontros/encontro-14.md) | U1 | Atividades práticas |
-| [15](encontros/encontro-15.md) | U1 | Classificação, extração de entidades e persistência |
-| [16](encontros/encontro-16.md) | U1 | Tool calling: contratos, execução segura e permissões |
-| [17](encontros/encontro-17.md) | U1 | Prática integrada com Angular, NestJS, PostgreSQL e IA |
+| [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: estrutura, estratégias e templates |
+| [11](encontros/encontro-11.md) | U1 | Versionamento, testes e redução de alucinações |
+| [12](encontros/encontro-12.md) | U1 | Structured output, JSON Schema e validação |
+| [13](encontros/encontro-13.md) | U1 | Atividades práticas |
+| [14](encontros/encontro-14.md) | U1 | Classificação, extração de entidades e persistência |
+| [15](encontros/encontro-15.md) | U1 | Tool calling: contratos, execução segura e permissões |
+| [16](encontros/encontro-16.md) | U1 | Prática integrada com Angular, NestJS, PostgreSQL e IA |
+| [17](encontros/encontro-17.md) | U1 | Consolidação prática e revisão arquitetural da Unidade 1 |
 | [18](encontros/encontro-18.md) | U1 | Apresentações de seminários/estudos de caso |
 | [19](encontros/encontro-19.md) | U1 | Apresentações de seminários/estudos de caso |
 | [20](encontros/encontro-20.md) | U1/U2 | Embeddings e similaridade de cosseno |

@@ -4,13 +4,13 @@ As práticas são incrementais e podem alimentar o projeto final.
 
 As práticas são distribuídas em dois checkpoints, sem conteúdo novo previsto:
 
-- **encontro 09:** execução local e integração inicial com NestJS;
-- **encontro 16:** streaming, contexto, resiliência, prompts e saída estruturada.
+- **encontro 07:** execução local e integração inicial com NestJS;
+- **encontro 13:** streaming, contexto, prompts e saída estruturada.
 
 ## Trilhas avaliadas
 
 1. execução local e comparação de modelos;
-2. integração NestJS/Angular com streaming e resiliência;
+2. integração NestJS/Angular com streaming e controle de contexto;
 3. prompts versionados e saída estruturada;
 4. tool calling seguro;
 5. embeddings, pgvector e busca semântica;
