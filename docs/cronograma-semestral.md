@@ -15,7 +15,7 @@ conteúdos seguintes foram antecipados em um encontro.
 | [07](encontros/encontro-07.md) | U1 | Atividade prática: classificação de chamados com IA |
 | [08](encontros/encontro-08.md) | U1 | Streaming para Angular e cancelamento |
 | [09](encontros/encontro-09.md) | U1 | Contexto, histórico, sessão e limites |
-| [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: estrutura, estratégias e templates |
+| [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: escrita, estrutura e exemplos |
 | [11](encontros/encontro-11.md) | U1 | Versionamento, testes e redução de alucinações |
 | [12](encontros/encontro-12.md) | U1 | Structured output, JSON Schema e validação |
 | [13](encontros/encontro-13.md) | U1 | Atividades práticas |
