@@ -17,16 +17,6 @@ especificação do formato da resposta.
 - Definir como o modelo deve agir quando faltarem informações.
 - Revisar prompts com um checklist objetivo.
 
-## Organização sugerida
-
-| Etapa | Duração |
-|---|---:|
-| retomada e diagnóstico de prompts ambíguos | 10 min |
-| anatomia e princípios de escrita | 25 min |
-| comparação comentada de exemplos | 25 min |
-| oficina individual de reescrita e execução | 25 min |
-| síntese e registro | 5 min |
-
 ## O que é um prompt?
 
 Prompt é o conjunto de instruções e informações fornecidas ao modelo para
