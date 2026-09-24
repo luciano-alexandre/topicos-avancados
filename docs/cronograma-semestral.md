@@ -17,7 +17,7 @@ conteúdos seguintes foram antecipados em um encontro.
 | [09](encontros/encontro-09.md) | U1 | Contexto, histórico, sessão e limites |
 | [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: escrita, estrutura e exemplos |
 | [11](encontros/encontro-11.md) | U1 | Testes e redução de respostas não sustentadas |
-| [12](encontros/encontro-12.md) | U1 | Structured output, JSON Schema e validação |
+| [12](encontros/encontro-12.md) | U1 | Implementação de features independentes com IA |
 | [13](encontros/encontro-13.md) | U1 | Atividades práticas |
 | [14](encontros/encontro-14.md) | U1 | Classificação, extração de entidades e persistência |
 | [15](encontros/encontro-15.md) | U1 | Tool calling: contratos, execução segura e permissões |
@@ -25,7 +25,7 @@ conteúdos seguintes foram antecipados em um encontro.
 | [17](encontros/encontro-17.md) | U1 | Consolidação prática e revisão arquitetural da Unidade 1 |
 | [18](encontros/encontro-18.md) | U1 | Apresentações de seminários/estudos de caso |
 | [19](encontros/encontro-19.md) | U1 | Apresentações de seminários/estudos de caso |
-| [20](encontros/encontro-20.md) | U1/U2 | Embeddings e similaridade de cosseno |
+| [20](encontros/encontro-20.md) | U1 | Embeddings e similaridade de cosseno |
 | [21](encontros/encontro-21.md) | U2 | pgvector, busca vetorial, filtros e busca híbrida |
 | [22](encontros/encontro-22.md) | U2 | Avaliação da recuperação semântica |
 | [23](encontros/encontro-23.md) | U2 | RAG: arquitetura e ingestão documental |
