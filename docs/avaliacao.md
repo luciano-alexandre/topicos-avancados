@@ -18,7 +18,7 @@
 - domínio e análise crítica: 8;
 - relação com a disciplina e estudo de caso: 5;
 - qualidade das fontes e evidências: 4;
-- clareza, tempo e participação: 3.
+- clareza e participação: 3.
 
 ## Projeto final — 50 pontos
 

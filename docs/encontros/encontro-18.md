@@ -187,16 +187,6 @@ Execute pelo menos estes casos:
 Após cada sucesso, consulte o banco e compare o registro com a resposta exibida
 no Angular. Após cada falha, confirme que nenhuma linha incompleta foi criada.
 
-## Organização dos 90 minutos
-
-| Etapa | Tempo |
-|---|---:|
-| apresentação do cenário e verificação do ambiente | 10 min |
-| banco, DTO e rota NestJS | 20 min |
-| integração com IA, validação e persistência | 25 min |
-| formulário e serviço Angular | 20 min |
-| testes, correções e registro | 15 min |
-
 ## Entrega individual
 
 Entregue:

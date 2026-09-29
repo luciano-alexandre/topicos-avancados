@@ -3,7 +3,6 @@
 ## Organização
 
 - Unidade pedagógica: 2;
-- duração: 90 minutos (2 aulas de 45 minutos);
 - tema curricular: Agentes: planejamento, ferramentas, orquestração e supervisão.
 
 ## Objetivos
@@ -13,10 +12,10 @@
 
 ## Desenvolvimento sugerido
 
-1. retomada e questão-problema — 10 min;
-2. fundamentação e demonstração — 40 min;
-3. protótipo com ferramentas e limite de iterações — 30 min;
-4. síntese e registro — 10 min.
+1. retomada e questão-problema;
+2. fundamentação e demonstração;
+3. protótipo com ferramentas e limite de iterações;
+4. síntese e registro.
 
 ## Resultado esperado
 

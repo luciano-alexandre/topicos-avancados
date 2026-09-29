@@ -3,7 +3,6 @@
 ## Organização
 
 - Unidade pedagógica: 2;
-- duração: 90 minutos (2 aulas de 45 minutos);
 - tema curricular: apresentação e avaliação dos projetos finais.
 
 ## Objetivos
@@ -13,9 +12,9 @@
 
 ## Desenvolvimento sugerido
 
-1. abertura e organização das apresentações — 5 min;
-2. apresentações e demonstrações dos projetos — 65 min;
-3. feedback, retrospectiva e encerramento — 20 min.
+1. abertura e organização das apresentações;
+2. apresentações e demonstrações dos projetos;
+3. feedback, retrospectiva e encerramento.
 
 ## Evidência de aprendizagem
 

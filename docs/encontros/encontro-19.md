@@ -3,7 +3,6 @@
 ## Organização
 
 - Unidade pedagógica: 1;
-- duração: 90 minutos (2 aulas de 45 minutos);
 - tema curricular: integração e revisão dos conceitos da primeira unidade.
 
 ## Objetivos
@@ -16,10 +15,10 @@
 
 ## Desenvolvimento sugerido
 
-1. retomada do fluxo completo e definição dos critérios — 10 min;
-2. revisão individual orientada por checklist — 20 min;
-3. correções e testes do fluxo integrado — 40 min;
-4. demonstração por amostragem e síntese da unidade — 20 min.
+1. retomada do fluxo completo e definição dos critérios;
+2. revisão individual orientada por checklist;
+3. correções e testes do fluxo integrado;
+4. demonstração por amostragem e síntese da unidade.
 
 ## Checklist de consolidação
 

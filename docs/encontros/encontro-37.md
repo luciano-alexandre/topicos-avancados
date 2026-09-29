@@ -3,7 +3,6 @@
 ## Organização
 
 - Unidade pedagógica: 2;
-- duração: 90 minutos (2 aulas de 45 minutos);
 - tema curricular: acompanhamento do projeto final.
 
 ## Objetivos
@@ -13,10 +12,10 @@
 
 ## Desenvolvimento sugerido
 
-1. retomada e questão-problema — 10 min;
-2. verificação dos critérios do projeto — 20 min;
-3. testes, correções e ensaio técnico — 50 min;
-4. síntese e registro da evidência — 10 min.
+1. retomada e questão-problema;
+2. verificação dos critérios do projeto;
+3. testes, correções e ensaio técnico;
+4. síntese e registro da evidência.
 
 ## Evidência de aprendizagem
 

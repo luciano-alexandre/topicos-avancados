@@ -3,7 +3,6 @@
 ## Organização
 
 - Unidade pedagógica: 2;
-- duração: 90 minutos (2 aulas de 45 minutos);
 - tema curricular: Extração, normalização, chunking e metadados.
 
 ## Objetivos
@@ -13,10 +12,10 @@
 
 ## Desenvolvimento sugerido
 
-1. retomada e questão-problema — 10 min;
-2. fundamentação e demonstração — 40 min;
-3. experimentos com tamanho e sobreposição — 30 min;
-4. síntese e registro — 10 min.
+1. retomada e questão-problema;
+2. fundamentação e demonstração;
+3. experimentos com tamanho e sobreposição;
+4. síntese e registro.
 
 ## Resultado esperado
 

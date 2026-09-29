@@ -7,25 +7,10 @@ arquitetura elaborados no Encontro 01.
 
 ## Objetivos
 
-- comunicar uma proposta arquitetural com clareza e dentro do tempo definido;
+- comunicar uma proposta arquitetural com clareza;
 - justificar onde a IA agrega valor e onde regras determinísticas permanecem;
 - identificar riscos, validações, fallback e responsabilidades no fluxo;
 - comparar soluções e incorporar feedback ao diagrama.
-
-## Organização dos 90 minutos
-
-| Etapa | Tempo | Condução |
-|---|---:|---|
-| abertura e critérios | 5 min | professor retoma o objetivo e a rubrica |
-| apresentações | 55 min | todas as duplas apresentam; até 4 min por dupla |
-| perguntas e comparação | 15 min | perguntas curtas e registro de padrões |
-| revisão do diagrama | 10 min | cada dupla anota duas melhorias prioritárias |
-| síntese e transição | 5 min | conexão com tokens, contexto e limitações |
-
-Se a quantidade de grupos exigir, o tempo individual deve ser calculado antes
-da aula: `(55 minutos ÷ número de grupos)`, limitado a quatro minutos. Os
-diagramas devem estar disponíveis no início do encontro para evitar tempo de
-troca de arquivos.
 
 ## Roteiro obrigatório da apresentação
 
@@ -54,7 +39,7 @@ flowchart LR
 | adequação | IA associada a uma tarefa probabilística pertinente |
 | controle | validação, regra determinística e fallback visíveis |
 | responsabilidade | dados sensíveis e confirmação humana identificados |
-| comunicação | respeito ao tempo e respostas objetivas |
+| comunicação | clareza e respostas objetivas |
 
 ## Produto do encontro
 

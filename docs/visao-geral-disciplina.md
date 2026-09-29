@@ -5,7 +5,7 @@
 - Disciplina: Tópicos Avançados em Sistemas para Internet — Desenvolvimento de Software com IA
 - Curso: Tecnologia em Sistemas para Internet (TSI)
 - Carga horária: 60 horas
-- Formato: 80 aulas de 45 minutos, em 40 encontros de 90 minutos
+- Formato: 40 encontros
 - Pré-requisitos: TypeScript, Angular, NestJS, REST, PostgreSQL e Git
 
 ## Propósito

@@ -6,7 +6,6 @@
 - realizada com consulta ao material da disciplina, documentação oficial e
   anotações pessoais;
 - entrega por repositório do GitHub vinculado à atividade do GitHub Classroom;
-- duração prevista: 90 minutos.
 
 A consulta é permitida, mas o código, os commits e a explicação das decisões
 devem ser individuais. Não é permitido copiar a implementação de outro

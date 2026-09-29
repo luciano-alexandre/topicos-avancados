@@ -12,16 +12,6 @@ planejamento de continuidade técnica e profissional.
 - sintetizar aprendizados e mudanças de perspectiva;
 - elaborar próximos passos verificáveis após a disciplina.
 
-## Organização dos 90 minutos
-
-| Etapa | Tempo | Atividade |
-|---|---:|---|
-| mapa de conceitos | 20 min | reconstrução coletiva da arquitetura da disciplina |
-| análise de decisões | 20 min | relação entre escolhas técnicas, riscos e evidências |
-| retrospectiva individual | 15 min | aprendizados, dificuldades e mudanças de perspectiva |
-| plano de continuidade | 25 min | definição de próximos passos verificáveis |
-| encerramento | 10 min | compartilhamento das sínteses e avaliação da trajetória |
-
 ## Mapa integrador
 
 ```mermaid

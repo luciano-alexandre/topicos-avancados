@@ -293,7 +293,6 @@ flowchart LR
     J --> T[Resposta na página]
 ```
 
-A atividade é individual e possui duração estimada de 30 a 40 minutos.
 
 > **Importante:** a chamada direta do navegador ao Ollama é usada aqui para
 > compreender o fluxo HTTP. Em uma aplicação real, o frontend deve chamar um
