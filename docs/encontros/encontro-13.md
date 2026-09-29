@@ -4,8 +4,6 @@
 
 Projeto conceitual de aplicações que combinam texto, imagem, áudio e documentos, considerando fluxo de dados, contratos, modelos, validação, privacidade, acessibilidade e experiência do usuário.
 
-O encontro não exige implementação. O objetivo é ampliar o projeto textual desenvolvido até agora e analisar decisões próprias de entradas multimodais.
-
 ## Objetivos
 
 - Diferenciar aplicação textual de aplicação multimodal.
