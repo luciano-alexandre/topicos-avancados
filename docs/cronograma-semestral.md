@@ -18,13 +18,13 @@ conteúdos seguintes foram antecipados em um encontro.
 | [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: escrita, estrutura e exemplos |
 | [11](encontros/encontro-11.md) | U1 | Testes e redução de respostas não sustentadas |
 | [12](encontros/encontro-12.md) | U1 | Implementação de features independentes com IA |
-| [13](encontros/encontro-13.md) | U1 | Atividades práticas |
-| [14](encontros/encontro-14.md) | U1 | Classificação, extração de entidades e persistência |
-| [15](encontros/encontro-15.md) | U1 | Tool calling: contratos, execução segura e permissões |
-| [16](encontros/encontro-16.md) | U1 | Prática integrada com Angular, NestJS, PostgreSQL e IA |
-| [17](encontros/encontro-17.md) | U1 | Consolidação prática e revisão arquitetural da Unidade 1 |
-| [18](encontros/encontro-18.md) | U1 | Apresentações de seminários/estudos de caso |
-| [19](encontros/encontro-19.md) | U1 | Apresentações de seminários/estudos de caso |
+| [13](encontros/encontro-13.md) | U1 | Experiência do usuário em produtos com IA |
+| [14](encontros/encontro-14.md) | U1 | Decisões arquiteturais em sistemas com IA |
+| [15](encontros/encontro-15.md) | U1 | Apresentação das features desenvolvidas |
+| [16](encontros/encontro-16.md) | U1 | Classificação, extração de entidades e persistência |
+| [17](encontros/encontro-17.md) | U1 | Tool calling: contratos, execução segura e permissões |
+| [18](encontros/encontro-18.md) | U1 | Prática integrada com Angular, NestJS, PostgreSQL e IA |
+| [19](encontros/encontro-19.md) | U1 | Consolidação prática e revisão arquitetural da Unidade 1 |
 | [20](encontros/encontro-20.md) | U1 | Embeddings e similaridade de cosseno |
 | [21](encontros/encontro-21.md) | U2 | pgvector, busca vetorial, filtros e busca híbrida |
 | [22](encontros/encontro-22.md) | U2 | Avaliação da recuperação semântica |

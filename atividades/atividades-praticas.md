@@ -5,7 +5,7 @@ As práticas são incrementais e podem alimentar o projeto final.
 As práticas são distribuídas em dois checkpoints, sem conteúdo novo previsto:
 
 - **encontro 07:** execução local e integração inicial com NestJS;
-- **encontro 13:** streaming, contexto, prompts e saída estruturada.
+- **encontro 12:** streaming, contexto, prompts e saída estruturada.
 
 ## Trilhas avaliadas
 
