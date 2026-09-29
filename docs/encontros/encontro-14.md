@@ -1,184 +1,316 @@
-# Encontro 14 — Decisões arquiteturais em sistemas com IA
+# Encontro 14 — Guardrails, supervisão humana e tratamento de incerteza
 
 ## Tema
 
-Análise de decisões, limites e trade-offs arquiteturais em aplicações que incorporam modelos de IA, sem atividade de implementação.
+Definição de limites para funcionalidades com IA, combinação de controles preventivos e detectivos, supervisão humana e comunicação de incerteza.
+
+O encontro é conceitual. Não haverá implementação, endpoints ou alteração do projeto.
 
 ## Objetivos
 
-- Identificar quando uma regra determinística é suficiente.
-- Comparar modelo local, serviço externo e abordagem híbrida.
-- Relacionar qualidade, custo, latência, privacidade e operação.
-- Reconhecer fronteiras de confiança em uma arquitetura com IA.
-- Avaliar o papel de validação, supervisão e observabilidade.
-- Justificar decisões técnicas sem depender de modismos.
+- Explicar o que são guardrails e quais problemas podem reduzir.
+- Diferenciar controles de entrada, saída, ação e regra de negócio.
+- Reconhecer que prompts não substituem validação ou autorização.
+- Definir quando uma decisão exige revisão humana.
+- Diferenciar ausência de informação, ambiguidade e falha técnica.
+- Planejar prevenção, detecção, contenção e recuperação.
+- Aplicar a análise às features definidas no Encontro 12.
+- Registrar riscos residuais.
 
-## A primeira decisão: a tarefa precisa de IA?
+## Relação com os encontros anteriores
 
-IA pode ser adequada quando a entrada é não estruturada, há variação linguística ou o resultado esperado envolve síntese, classificação contextual ou geração.
+O projeto e as features propostas mostraram que:
 
-Uma regra tradicional tende a ser melhor quando:
+- entradas podem ser incompletas ou manipulativas;
+- modelos podem devolver respostas plausíveis e incorretas;
+- formato válido não garante conteúdo correto;
+- prompts claros reduzem ambiguidades, mas não oferecem garantia;
+- testes revelam falhas conhecidas, mas não cobrem todas as situações;
+- a aplicação continua responsável por regras, validação e autorização.
 
-- o comportamento precisa ser exato e previsível;
-- todas as condições podem ser expressas claramente;
-- erros possuem consequência elevada;
-- auditoria exige uma explicação determinística;
-- custo e latência de inferência não se justificam;
-- a tarefa pode ser resolvida com consulta ou cálculo convencional.
+Este encontro organiza essas observações em uma proteção por camadas.
 
-Usar IA onde uma enumeração, expressão regular ou consulta resolve o problema aumenta complexidade sem benefício necessário.
+## O que são guardrails?
 
-## Dimensões de decisão
+Guardrails são limites e controles que reduzem a probabilidade ou o impacto de um comportamento indesejado. Eles não são uma biblioteca, um prompt especial ou um filtro universal.
 
-| Dimensão | Pergunta |
+Fluxo conceitual:
+
+Entrada → prevenção → modelo → detecção → decisão de aceite → revisão humana ou uso controlado.
+
+Quando a resposta não pode ser aceita, o fluxo deve seguir para contenção e recuperação.
+
+## Quatro funções de controle
+
+| Função | Pergunta | Exemplo conceitual |
+|---|---|---|
+| prevenção | como evitar entradas ou usos indevidos? | limitar tamanho e dados aceitos |
+| detecção | como reconhecer uma saída inadequada? | conferir valores permitidos |
+| contenção | como impedir consequência após a falha? | não enviar resposta automaticamente |
+| recuperação | como continuar com segurança? | encaminhar para revisão humana |
+
+Prevenção total não é realista. O sistema também precisa detectar, conter e recuperar.
+
+## Guardrail não é apenas prompt
+
+| Controle | Responsável principal |
 |---|---|
-| qualidade | o resultado atende aos casos relevantes? |
-| latência | quanto o usuário pode esperar? |
-| custo | qual é o custo por uso e por operação? |
-| privacidade | quais dados deixam a aplicação? |
-| disponibilidade | o sistema funciona quando o modelo falha? |
-| controle | a saída pode ser validada? |
-| atualização | quais informações precisam ser atuais? |
-| operação | a equipe consegue manter a solução? |
-| escala | hardware e serviço suportam a demanda? |
-| governança | quem responde pela decisão? |
-
-Não existe escolha melhor em todas as dimensões. Arquitetura é uma composição explícita de compromissos.
-
-## Modelo local, serviço externo e abordagem híbrida
-
-### Modelo local
-
-Pode favorecer controle de dados e independência de um serviço externo, mas exige capacidade computacional, atualização, monitoramento e conhecimento operacional.
-
-### Serviço externo
-
-Pode oferecer modelos mais capazes e menor esforço de infraestrutura, mas introduz dependência de rede, custo variável, limites de uso e análise cuidadosa de privacidade.
-
-### Abordagem híbrida
-
-Pode encaminhar tarefas conforme sensibilidade ou complexidade, mas aumenta regras de roteamento, testes, observabilidade e risco de comportamento diferente entre modelos.
-
-## Fronteiras de confiança
-
-Considere como não confiáveis:
-
-- entrada do usuário;
-- documentos recuperados;
-- conteúdo gerado pelo modelo;
-- argumentos sugeridos para ferramentas;
-- dados vindos de integrações externas.
-
-Validação de formato não confirma veracidade. Autorização não deve ser delegada ao modelo. Dados sensíveis não devem ser enviados apenas porque cabem no contexto.
-
-## Onde cada responsabilidade deve ficar?
-
-| Responsabilidade | Dono principal |
-|---|---|
-| regra de negócio | aplicação |
+| instrução e contexto | aplicação |
+| validação de tipo e formato | aplicação |
 | autenticação e autorização | aplicação |
-| validação de entrada e saída | aplicação |
-| geração ou interpretação linguística | modelo |
-| persistência | camada de dados |
-| seleção de fontes autorizadas | aplicação |
-| confirmação de ação crítica | pessoa ou regra explícita |
-| registro de métricas | infraestrutura e aplicação |
+| geração e interpretação linguística | modelo |
+| confirmação de ação crítica | pessoa ou regra determinística |
+| retenção de dados | aplicação e governança |
+| monitoramento de falhas | aplicação e operação |
+| contestação de decisão | processo de negócio |
 
-O modelo participa do fluxo, mas não substitui as demais camadas.
+O modelo nunca deve decidir se uma pessoa está autorizada apenas com base em texto gerado.
 
-## Acoplamento ao fornecedor
+## Camadas de proteção
 
-Uma aplicação fica fortemente acoplada quando regras de negócio dependem de nomes, campos e comportamentos exclusivos de um provedor.
+### Entrada
 
-Questões para análise:
+Controles podem considerar tipo, tamanho, campos obrigatórios, conteúdo fora do escopo, dados sensíveis, tentativas de alterar instruções e formatos não suportados.
 
-- o contrato interno descreve a necessidade da aplicação?
-- a troca de modelo exige alterar controllers e regras de negócio?
-- parâmetros externos aparecem no contrato público?
-- testes conseguem substituir o modelo?
-- a aplicação conhece a diferença entre indisponibilidade e resposta inválida?
+Rejeitar toda entrada incomum também produz erros. É necessário distinguir bloqueio, aviso e revisão.
 
-Abstração em excesso também tem custo. Ela deve proteger uma variação real, não apenas uma possibilidade imaginada.
+### Contexto
 
-## Custo total
+O contexto precisa ser relevante, autorizado e compatível com o usuário atual. Documentos recuperados também podem conter erros ou instruções maliciosas.
 
-O preço de inferência ou o custo do hardware é apenas uma parte. Considere:
+Pergunte:
 
-- desenvolvimento e manutenção;
-- criação e revisão de datasets;
-- avaliação contínua;
-- observabilidade;
-- armazenamento de entradas e resultados;
-- revisão humana;
-- incidentes e correções;
-- atualização de modelos;
-- adequação jurídica e de privacidade.
+- a fonte pode ser usada nesta finalidade?
+- o usuário pode acessar essa informação?
+- o conteúdo ainda é atual?
+- a origem será apresentada?
+- existem dados de outra pessoa?
 
-Uma solução aparentemente barata pode transferir custo para revisão manual ou operação.
+### Saída
 
-## Decisões reversíveis e irreversíveis
+A saída deve ser tratada como dado externo. Verifique lista de valores, formato, tamanho, campos obrigatórios, ausência de segredos, evidência exigida e necessidade de revisão.
 
-Decisões reversíveis podem ser experimentadas com menor risco, como alterar um prompt ou comparar modelos em ambiente controlado.
+### Ação
 
-Decisões de difícil reversão incluem armazenar grandes volumes de dados pessoais, tornar um fornecedor parte do contrato público ou automatizar uma decisão crítica sem mecanismo de contestação.
+Uma resposta textual e uma ação possuem riscos diferentes. Antes de enviar mensagem, alterar cadastro, aprovar solicitação ou executar ferramenta, o sistema deve conferir autorização, parâmetros e consequência.
 
-Quanto menos reversível a decisão, maior deve ser a evidência exigida.
+Quanto maior o impacto ou a dificuldade de reversão, maior deve ser o controle humano ou determinístico.
 
-## Análise do projeto da disciplina
+## Tipos de incerteza
 
-Cada dupla deverá analisar sua feature do Encontro 12 respondendo:
+| Tipo | Exemplo | Tratamento esperado |
+|---|---|---|
+| ausência de dados | “não funciona” | solicitar informação |
+| ambiguidade | duas categorias possíveis | sinalizar revisão |
+| limite de conhecimento | dado fora do contexto | declarar indisponibilidade |
+| conflito de fontes | documentos discordam | apresentar o conflito |
+| saída inválida | categoria inventada | rejeitar |
+| falha técnica | modelo indisponível | informar indisponibilidade |
+| risco elevado | possibilidade de dano | exigir decisão humana |
 
-1. A tarefa realmente necessita de IA?
-2. Qual parte poderia ser determinística?
-3. Qual é o maior risco de uma resposta incorreta?
-4. Quais dados entram e quais saem?
-5. Onde a validação deve ocorrer?
-6. Quem confirma o resultado?
-7. O sistema ainda oferece valor se o modelo estiver indisponível?
-8. Qual dimensão é prioritária: qualidade, custo, latência ou privacidade?
-9. O que precisaria ser medido em produção?
-10. Qual decisão seria mais difícil de reverter?
+Não transforme todas essas situações em uma resposta genérica ou em OUTROS.
 
-## Matriz de decisão
+## Confiança declarada pelo modelo
 
-A dupla deverá preencher uma matriz qualitativa:
+Pedir uma porcentagem de confiança não cria uma probabilidade calibrada. Um valor como 95% pode apenas reproduzir o formato solicitado.
 
-| Alternativa | Qualidade | Latência | Privacidade | Custo | Operação | Risco |
-|---|---|---|---|---|---|---|
-| regra determinística |  |  |  |  |  |  |
-| modelo local |  |  |  |  |  |  |
-| serviço externo |  |  |  |  |  |  |
-| solução híbrida |  |  |  |  |  |  |
+Alternativas mais observáveis:
 
-As classificações devem ser justificadas. Não existe obrigação de escolher IA como alternativa final.
+- informar dados ausentes;
+- marcar ambiguidade;
+- verificar presença de evidência;
+- aplicar regras explícitas;
+- encaminhar casos definidos para revisão.
 
-## Atividade de análise
+## Supervisão humana
 
-Produza uma decisão arquitetural curta contendo:
+Human-in-the-loop exige definir:
 
-- contexto e problema;
-- alternativas consideradas;
-- critérios utilizados;
-- alternativa escolhida;
-- vantagens aceitas;
-- custos e riscos aceitos;
-- consequências esperadas;
-- condição que justificaria revisar a decisão.
+- quem revisa;
+- quais casos chegam à revisão;
+- quais informações são apresentadas;
+- qual decisão a pessoa pode tomar;
+- como a decisão é registrada;
+- como um erro é corrigido;
+- o que acontece quando ninguém revisa.
 
-A atividade é conceitual. Não haverá implementação ou alteração do projeto.
+Uma pessoa sem contexto, tempo ou autoridade não constitui supervisão efetiva.
 
-## Checklist
+## Níveis de supervisão
 
-- [ ] alternativas sem IA foram consideradas;
-- [ ] critérios estão explícitos;
-- [ ] dados e fronteiras de confiança foram identificados;
-- [ ] autorização permanece fora do modelo;
-- [ ] custo total foi considerado;
-- [ ] supervisão humana foi posicionada;
-- [ ] indisponibilidade foi discutida;
-- [ ] decisão e trade-offs foram justificados;
-- [ ] condições de revisão foram registradas.
+| Uso da IA | Supervisão |
+|---|---|
+| informação | usuário interpreta |
+| sugestão | pessoa aceita ou rejeita |
+| rascunho | pessoa edita e envia |
+| recomendação operacional | exceções são confirmadas |
+| ação reversível | registro e possibilidade de desfazer |
+| ação crítica | aprovação humana prévia |
+
+O nível depende do impacto, não da qualidade aparente do texto.
+
+## Quando exigir revisão
+
+Considere revisão obrigatória diante de:
+
+- dado insuficiente ou contraditório;
+- caso fora do conjunto avaliado;
+- impacto financeiro, acadêmico, jurídico ou de acesso;
+- dado pessoal sensível;
+- ação difícil de desfazer;
+- entrada adversarial;
+- exceção à regra;
+- conflito com regra determinística;
+- erro de validação;
+- contestação do usuário.
+
+## Matriz de risco
+
+| Probabilidade / impacto | baixo | médio | alto |
+|---|---|---|---|
+| baixa | acompanhar | registrar | revisar |
+| média | registrar | mitigar | revisão obrigatória |
+| alta | mitigar | revisão obrigatória | não automatizar |
+
+A matriz não produz verdade matemática. Ela torna explícita a justificativa do tratamento.
+
+## Aplicação às features do Encontro 12
+
+### Priorização
+
+Riscos: urgência exagerada, impacto inventado e reorganização indevida da fila.
+
+Controles: prioridades fechadas, justificativa baseada no chamado, revisão quando o impacto estiver ausente e correção humana.
+
+### Título e resumo
+
+Riscos: remover negação, inventar detalhe, omitir problema principal ou expor dado sensível.
+
+Controles: limites de tamanho, comparação com o original, identificação de conteúdo gerado e revisão de entradas insuficientes.
+
+### Rascunho de resposta
+
+Riscos: prometer prazo, aprovar algo sem autorização, solicitar segredo ou enviar sem revisão.
+
+Controles: identificação como rascunho, envio automático proibido e revisão obrigatória.
+
+### Informações ausentes
+
+Riscos: solicitar dado já fornecido, pedir segredo ou criar perguntas fora do problema.
+
+Controles: limite de perguntas, proibição de segredos e lista vazia quando a entrada for suficiente.
+
+### Mascaramento
+
+Riscos: deixar dado exposto, mascarar conteúdo comum, alterar sentido ou declarar segurança completa.
+
+Controles: sinalizar ambiguidades, preservar contexto e nunca prometer detecção total.
+
+## Estudos de caso
+
+### Prioridade sem evidência
+
+Entrada: “O portal não está funcionando.”
+
+Discuta alcance, impacto, informação ausente, revisão necessária e risco de classificar como crítica ou baixa.
+
+### Resposta com promessa
+
+Entrada: “Preciso do reembolso ainda hoje.”
+
+Saída: “Seu reembolso será realizado até o fim do dia.”
+
+Discuta regra violada, autoridade necessária e decisão entre bloqueio, correção e revisão.
+
+### Mascaramento incompleto
+
+O sistema mascara o e-mail, mas mantém um token.
+
+Discuta risco residual, comunicação ao usuário e possibilidade de persistência.
+
+### Instrução adversarial
+
+O chamado ordena que tudo seja classificado como crítico.
+
+Discuta quais camadas devem atuar e por que uma categoria válida ainda pode estar errada.
+
+## Atividade conceitual em duplas
+
+Cada dupla deverá analisar sua feature do Encontro 12 e produzir uma ficha de guardrails.
+
+### Parte 1 — risco
+
+Registre resultado indesejado, causa, pessoa afetada, impacto, probabilidade e possibilidade de reversão.
+
+### Parte 2 — controles
+
+Defina ao menos:
+
+- um controle preventivo;
+- um controle detectivo;
+- uma contenção;
+- uma recuperação;
+- um critério de revisão humana.
+
+### Parte 3 — incerteza
+
+Explique como a feature diferencia falta de informação, ambiguidade, saída inválida, falha técnica e alto risco.
+
+### Parte 4 — risco residual
+
+Declare o que ainda pode dar errado depois dos controles.
+
+## Modelo de ficha
+
+| Item | Definição da dupla |
+|---|---|
+| feature |  |
+| maior risco |  |
+| entrada problemática |  |
+| prevenção |  |
+| detecção |  |
+| contenção |  |
+| recuperação |  |
+| revisão humana |  |
+| comunicação ao usuário |  |
+| risco residual |  |
+
+## Critérios de análise
+
+- controles tratam riscos específicos;
+- prompt não é a única proteção;
+- autorização permanece fora do modelo;
+- revisão humana possui gatilho claro;
+- ausência, ambiguidade e falha são diferenciadas;
+- risco residual é reconhecido;
+- usuário consegue contestar ou corrigir;
+- dados sensíveis são considerados.
+
+## Erros conceituais comuns
+
+- criar um único filtro universal;
+- bloquear toda entrada incomum;
+- confiar na autodeclaração do modelo;
+- chamar toda falha de alucinação;
+- adicionar revisão humana sem processo;
+- esconder incerteza para simplificar a interface;
+- usar porcentagem de confiança sem calibração.
+
+## Checklist de aprendizagem
+
+- [ ] definir guardrails como estratégia em camadas;
+- [ ] diferenciar prevenção, detecção, contenção e recuperação;
+- [ ] separar prompt, validação e autorização;
+- [ ] reconhecer tipos de incerteza;
+- [ ] posicionar revisão conforme impacto;
+- [ ] identificar riscos das features;
+- [ ] registrar riscos residuais;
+- [ ] comunicar limites adequadamente.
+
+## Resultado esperado
+
+Ficha conceitual vinculada à feature da dupla, contendo riscos, controles em camadas, gatilhos de supervisão, tratamento de incerteza e risco residual.
 
 ## Síntese
 
-Uma arquitetura com IA não é definida apenas pelo modelo escolhido. Ela resulta da distribuição de responsabilidades, das fronteiras de confiança e dos compromissos assumidos entre qualidade, custo, latência, privacidade e operação.
+Guardrails não tornam o modelo infalível. Eles reduzem risco combinando prevenção, detecção, contenção, recuperação e supervisão. Um sistema responsável reconhece quando não possui informação suficiente, quando a saída deve ser rejeitada e quando uma pessoa precisa decidir.

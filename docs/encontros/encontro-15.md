@@ -1,129 +1,123 @@
-# Encontro 15 — Apresentação das features desenvolvidas
+# Encontro 15 — Seleção de modelos para aplicações com IA
 
-## Modalidade
+## Tema
 
-Apresentação em duplas das features definidas no Encontro 12. Não haverá novo conteúdo de implementação neste encontro.
+Critérios para selecionar modelos considerando qualidade, custo, latência, privacidade, requisitos operacionais e condições de uso.
+
+O encontro é conceitual e não exige implementação.
 
 ## Objetivos
 
-- Demonstrar a feature funcionando sobre o projeto-base.
-- Explicar o problema atendido e o contrato adotado.
-- Apresentar evidências de validação e testes.
-- Relacionar a implementação às análises de experiência e arquitetura.
-- Compartilhar limitações, erros encontrados e decisões tomadas.
+- Evitar escolhas baseadas apenas em popularidade ou tamanho.
+- Relacionar capacidade do modelo à tarefa da aplicação.
+- Comparar execução local, serviço externo e abordagem híbrida.
+- Considerar idioma, contexto, hardware e privacidade.
+- Identificar restrições de licença e condições de uso.
+- Definir avaliação baseada em casos do projeto.
 
-## Features apresentadas
+## A pergunta correta
 
-1. Priorização de chamados.
-2. Geração de título e resumo.
-3. Sugestão de resposta para o solicitante.
-4. Identificação de informações ausentes.
-5. Detecção e mascaramento de dados sensíveis.
+Não pergunte apenas “qual é o melhor modelo?”. Pergunte qual modelo atende a determinada tarefa, ambiente e conjunto de limites.
 
-Se mais de uma dupla tiver recebido a mesma feature, as apresentações deverão destacar diferenças de contrato, critérios, testes e resultados.
+Um modelo mais capaz pode ser inviável por custo, latência ou memória. Um modelo menor pode atender classificação e ser inadequado para análise extensa.
 
-## Conteúdo obrigatório da apresentação
+## Critérios de seleção
 
-Cada dupla deverá apresentar:
+| Critério | Pergunta |
+|---|---|
+| qualidade | acerta os casos relevantes? |
+| idioma | compreende o português utilizado? |
+| formato | respeita o contrato esperado? |
+| contexto | suporta a entrada necessária? |
+| latência | responde no prazo aceitável? |
+| custo | cabe no volume previsto? |
+| hardware | funciona na infraestrutura? |
+| privacidade | os dados podem ir para esse ambiente? |
+| licença | o uso pretendido é permitido? |
+| operação | a equipe consegue manter e atualizar? |
 
-1. necessidade atendida;
-2. comportamento esperado;
-3. contrato de entrada e saída;
-4. demonstração funcional;
-5. validações realizadas pelo backend;
-6. teste sem o modelo real;
-7. teste com o Ollama;
-8. cenário normal;
-9. cenário de fronteira;
-10. resposta inválida rejeitada;
-11. limitação conhecida;
-12. decisão de UX discutida no Encontro 13;
-13. decisão arquitetural discutida no Encontro 14;
-14. contribuição de cada integrante.
+## Evidências úteis
 
-## Roteiro sugerido
+Considere documentação oficial, model card, licença, requisitos de hardware, limites de contexto, avaliações públicas relevantes, dataset próprio e resultados no ambiente real.
 
-### Contexto
+Ranking isolado, marketing ou opinião sem contexto não devem sustentar a decisão.
 
-Explique o problema em linguagem de produto, sem iniciar pela estrutura interna do código.
+## Local, externo ou híbrido
 
-### Contrato
+### Local
 
-Mostre o que a feature recebe, o que devolve e quais valores são rejeitados.
+Favorece controle de dados, mas exige hardware, atualização e operação.
 
-### Demonstração
+### Externo
 
-Execute a aplicação pelo Docker Compose e apresente pelo menos um caso bem-sucedido e um caso de falha controlada.
+Pode oferecer maior capacidade, mas envolve rede, custo variável, retenção de dados e dependência do fornecedor.
 
-### Evidências
+### Híbrido
 
-Apresente testes, resultados observados e critérios de aceite atendidos.
+Pode separar tarefas por sensibilidade ou dificuldade, mas aumenta complexidade e necessidade de comparação.
 
-### Decisões
+## Licenciamento
 
-Explique uma escolha relevante, uma alternativa descartada e um compromisso assumido.
+Verifique permissão de uso, redistribuição, atribuição, modelos derivados, políticas aceitáveis e origem da informação. Disponibilidade para download não significa liberdade para qualquer uso.
 
-### Limitações
+## Matriz de decisão
 
-Declare o que a feature não resolve e em quais situações exige revisão humana.
+Cada dupla deverá comparar três alternativas para sua feature:
 
-## Regras
+| Critério | Peso | Alternativa A | Alternativa B | Alternativa C |
+|---|---:|---:|---:|---:|
+| qualidade na tarefa |  |  |  |  |
+| português |  |  |  |  |
+| formato |  |  |  |  |
+| latência |  |  |  |  |
+| custo |  |  |  |  |
+| privacidade |  |  |  |  |
+| hardware |  |  |  |  |
+| licença |  |  |  |  |
+| operação |  |  |  |  |
 
-- os dois integrantes devem participar;
-- a demonstração deve utilizar a entrega da própria dupla;
-- dados pessoais reais não podem ser utilizados;
-- falhas durante a apresentação devem ser analisadas, não escondidas;
-- slides não substituem a demonstração;
-- a dupla não deve apresentar a saída da IA como verdade garantida;
-- dependência de outra feature caracteriza descumprimento do requisito de independência;
-- credenciais, segredos e arquivos de ambiente não podem ser exibidos.
+Os pesos devem refletir a feature. Mascaramento pode priorizar privacidade; rascunho pode exigir qualidade linguística; priorização pode exigir consistência e baixa latência.
 
-## Critérios de avaliação
+## Atividade conceitual
 
-| Critério | Peso |
-|---|---:|
-| funcionamento e aderência à feature | 25% |
-| demonstração e evidências | 20% |
-| validação e tratamento de falhas | 20% |
-| justificativa das decisões | 15% |
-| análise de limitações e supervisão humana | 10% |
-| clareza e participação da dupla | 10% |
+Produza uma recomendação contendo:
 
-## Registro da turma
+- requisitos prioritários;
+- três alternativas;
+- evidências consultadas;
+- matriz preenchida;
+- alternativa recomendada;
+- riscos e limitações;
+- condição para revisar a decisão.
 
-| Dupla | Feature | Resultado | Ponto forte | Limitação principal |
-|---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+Não é necessário instalar, baixar ou integrar novos modelos.
 
-## Perguntas para discussão
+## Erros comuns
 
-Após cada apresentação, a turma deverá considerar:
+- escolher pelo maior número de parâmetros;
+- confiar em benchmark sem relação com a tarefa;
+- ignorar idioma e entradas reais;
+- comparar com prompts diferentes;
+- esquecer custo do modelo local;
+- desconsiderar licença e retenção;
+- tratar uma avaliação como garantia permanente;
+- acoplar o contrato público ao fornecedor.
 
-- a feature usa IA em uma parte justificável?
-- o contrato permite reconhecer respostas inválidas?
-- qual erro teria maior impacto?
-- a interface comunica que o resultado foi gerado?
-- a revisão humana está posicionada corretamente?
-- a solução continuaria útil diante de uma falha do modelo?
-- os testes apresentados cobrem situações adversariais?
+## Checklist
 
-## Entrega final da dupla
-
-A entrega deverá conter:
-
-- código apresentado;
-- README atualizado;
-- evidências dos testes;
-- resultados dos cenários obrigatórios;
-- análise de UX;
-- decisão arquitetural;
-- limitações conhecidas;
-- identificação dos integrantes.
+- [ ] tarefa definida;
+- [ ] critérios e pesos justificados;
+- [ ] alternativas locais e externas consideradas;
+- [ ] privacidade e licença avaliadas;
+- [ ] hardware e latência considerados;
+- [ ] evidências vão além de popularidade;
+- [ ] recomendação declara riscos;
+- [ ] existe condição para reavaliar.
 
 ## Resultado esperado
 
-Ao final do encontro, a turma terá comparado cinco formas independentes de ampliar o mesmo sistema com IA, observando diferenças de contrato, risco, experiência do usuário e decisões arquiteturais.
+Matriz e recomendação fundamentada para a feature da dupla, sem implementação.
+
+## Síntese
+
+Seleção de modelo é uma decisão de engenharia. A escolha conecta capacidade, risco, custo e operação aos requisitos concretos da aplicação.

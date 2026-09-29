@@ -18,9 +18,9 @@ conteúdos seguintes foram antecipados em um encontro.
 | [10](encontros/encontro-10.md) | U1 | Engenharia de prompts: escrita, estrutura e exemplos |
 | [11](encontros/encontro-11.md) | U1 | Testes e redução de respostas não sustentadas |
 | [12](encontros/encontro-12.md) | U1 | Implementação de features independentes com IA |
-| [13](encontros/encontro-13.md) | U1 | Experiência do usuário em produtos com IA |
-| [14](encontros/encontro-14.md) | U1 | Decisões arquiteturais em sistemas com IA |
-| [15](encontros/encontro-15.md) | U1 | Apresentação das features desenvolvidas |
+| [13](encontros/encontro-13.md) | U1 | Decisões arquiteturais em sistemas com IA |
+| [14](encontros/encontro-14.md) | U1 | Guardrails, supervisão humana e tratamento de incerteza |
+| [15](encontros/encontro-15.md) | U1 | Seleção de modelos para aplicações com IA |
 | [16](encontros/encontro-16.md) | U1 | Classificação, extração de entidades e persistência |
 | [17](encontros/encontro-17.md) | U1 | Tool calling: contratos, execução segura e permissões |
 | [18](encontros/encontro-18.md) | U1 | Prática integrada com Angular, NestJS, PostgreSQL e IA |

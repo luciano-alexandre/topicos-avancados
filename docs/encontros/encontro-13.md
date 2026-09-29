@@ -1,143 +1,184 @@
-# Encontro 13 — Experiência do usuário em produtos com IA
+# Encontro 13 — Decisões arquiteturais em sistemas com IA
 
 ## Tema
 
-Análise de como sistemas com IA devem comunicar capacidades, limites, incerteza e controle ao usuário, sem atividade de implementação.
+Análise de decisões, limites e trade-offs arquiteturais em aplicações que incorporam modelos de IA, sem atividade de implementação.
 
 ## Objetivos
 
-- Diferenciar uma interface tradicional de uma interação mediada por IA.
-- Reconhecer expectativas inadequadas criadas pela linguagem da interface.
-- Projetar experiências que permitam revisão, correção e desistência.
-- Discutir transparência, confiança, acessibilidade e supervisão humana.
-- Avaliar situações em que a IA não deveria tomar a decisão final.
+- Identificar quando uma regra determinística é suficiente.
+- Comparar modelo local, serviço externo e abordagem híbrida.
+- Relacionar qualidade, custo, latência, privacidade e operação.
+- Reconhecer fronteiras de confiança em uma arquitetura com IA.
+- Avaliar o papel de validação, supervisão e observabilidade.
+- Justificar decisões técnicas sem depender de modismos.
 
-## Por que UX para IA é diferente?
+## A primeira decisão: a tarefa precisa de IA?
 
-Em uma interface tradicional, a mesma entrada costuma produzir um comportamento previamente programado. Em sistemas com IA, a saída pode variar, conter erros plausíveis ou não atender exatamente ao pedido.
+IA pode ser adequada quando a entrada é não estruturada, há variação linguística ou o resultado esperado envolve síntese, classificação contextual ou geração.
 
-A experiência precisa preparar o usuário para essa característica. Não basta colocar um campo de texto e um botão “Gerar”.
+Uma regra tradicional tende a ser melhor quando:
 
-## Princípios de interação
+- o comportamento precisa ser exato e previsível;
+- todas as condições podem ser expressas claramente;
+- erros possuem consequência elevada;
+- auditoria exige uma explicação determinística;
+- custo e latência de inferência não se justificam;
+- a tarefa pode ser resolvida com consulta ou cálculo convencional.
 
-### Comunicar a função real
+Usar IA onde uma enumeração, expressão regular ou consulta resolve o problema aumenta complexidade sem benefício necessário.
 
-A interface deve explicar o que a IA faz naquele contexto. Expressões como “assistente inteligente” são vagas. É melhor declarar que o sistema sugere uma categoria, resume um chamado ou prepara um rascunho sujeito a revisão.
+## Dimensões de decisão
 
-### Não criar aparência de certeza
+| Dimensão | Pergunta |
+|---|---|
+| qualidade | o resultado atende aos casos relevantes? |
+| latência | quanto o usuário pode esperar? |
+| custo | qual é o custo por uso e por operação? |
+| privacidade | quais dados deixam a aplicação? |
+| disponibilidade | o sistema funciona quando o modelo falha? |
+| controle | a saída pode ser validada? |
+| atualização | quais informações precisam ser atuais? |
+| operação | a equipe consegue manter a solução? |
+| escala | hardware e serviço suportam a demanda? |
+| governança | quem responde pela decisão? |
 
-Tom confiante não significa resultado correto. A interface deve distinguir resultado gerado, dado confirmado e decisão humana.
+Não existe escolha melhor em todas as dimensões. Arquitetura é uma composição explícita de compromissos.
 
-### Manter o usuário no controle
+## Modelo local, serviço externo e abordagem híbrida
 
-O usuário deve conseguir revisar, editar, rejeitar, solicitar nova tentativa e continuar sem utilizar a sugestão.
+### Modelo local
 
-### Explicar limites relevantes
+Pode favorecer controle de dados e independência de um serviço externo, mas exige capacidade computacional, atualização, monitoramento e conhecimento operacional.
 
-A aplicação deve informar, em linguagem adequada ao público, quando a resposta pode estar incompleta, quando depende apenas do texto informado e quando exige confirmação.
+### Serviço externo
 
-### Planejar a recuperação de falhas
+Pode oferecer modelos mais capazes e menor esforço de infraestrutura, mas introduz dependência de rede, custo variável, limites de uso e análise cuidadosa de privacidade.
 
-Uma boa experiência prevê indisponibilidade, resposta inválida, demora, cancelamento e falta de informação. Mensagens genéricas como “algo deu errado” não ajudam o usuário a decidir o próximo passo.
+### Abordagem híbrida
 
-## Níveis de participação da IA
+Pode encaminhar tarefas conforme sensibilidade ou complexidade, mas aumenta regras de roteamento, testes, observabilidade e risco de comportamento diferente entre modelos.
 
-| Nível | Papel da IA | Papel humano |
-|---|---|---|
-| apoio | organiza ou resume | decide integralmente |
-| recomendação | sugere uma opção | revisa e confirma |
-| execução supervisionada | prepara uma ação | autoriza antes da execução |
-| automação limitada | executa casos previstos | acompanha exceções |
-| decisão autônoma | decide e executa | audita posteriormente |
+## Fronteiras de confiança
 
-Quanto maior o impacto, maior deve ser a exigência de supervisão, explicação e possibilidade de contestação.
+Considere como não confiáveis:
 
-## Padrões úteis
+- entrada do usuário;
+- documentos recuperados;
+- conteúdo gerado pelo modelo;
+- argumentos sugeridos para ferramentas;
+- dados vindos de integrações externas.
 
-- apresentar sugestões como sugestões;
-- mostrar a entrada usada para produzir o resultado;
-- permitir edição antes de salvar ou enviar;
-- solicitar confirmação para ações com consequência;
-- indicar quais informações estão ausentes;
-- preservar o trabalho do usuário quando ocorrer erro;
-- oferecer cancelamento em operações demoradas;
-- diferenciar conteúdo original de conteúdo gerado;
-- fornecer um caminho para revisão humana.
+Validação de formato não confirma veracidade. Autorização não deve ser delegada ao modelo. Dados sensíveis não devem ser enviados apenas porque cabem no contexto.
 
-## Padrões problemáticos
+## Onde cada responsabilidade deve ficar?
 
-- esconder que uma resposta foi gerada por IA;
-- usar porcentagens de confiança sem significado validado;
-- apresentar rascunho como decisão definitiva;
-- induzir o usuário a aceitar a sugestão mais rapidamente;
-- responsabilizar o usuário por erros que ele não pode detectar;
-- impedir correção ou contestação;
-- pedir dados desnecessários para a tarefa;
-- utilizar linguagem humana para sugerir capacidades inexistentes.
+| Responsabilidade | Dono principal |
+|---|---|
+| regra de negócio | aplicação |
+| autenticação e autorização | aplicação |
+| validação de entrada e saída | aplicação |
+| geração ou interpretação linguística | modelo |
+| persistência | camada de dados |
+| seleção de fontes autorizadas | aplicação |
+| confirmação de ação crítica | pessoa ou regra explícita |
+| registro de métricas | infraestrutura e aplicação |
 
-## Discussão aplicada ao projeto
+O modelo participa do fluxo, mas não substitui as demais camadas.
 
-Para cada feature do Encontro 12, analise:
+## Acoplamento ao fornecedor
 
-1. O resultado é sugestão, dado ou decisão?
-2. Quem deve revisar?
-3. O que acontece quando faltam informações?
-4. Qual erro pode causar maior dano?
-5. Como o usuário corrige o resultado?
-6. A aplicação deixa claro o que veio do chamado e o que foi gerado?
-7. É possível continuar sem aceitar a sugestão?
-8. Quais dados não deveriam aparecer na interface?
+Uma aplicação fica fortemente acoplada quando regras de negócio dependem de nomes, campos e comportamentos exclusivos de um provedor.
 
-## Estudos de situação
+Questões para análise:
 
-### Priorização
+- o contrato interno descreve a necessidade da aplicação?
+- a troca de modelo exige alterar controllers e regras de negócio?
+- parâmetros externos aparecem no contrato público?
+- testes conseguem substituir o modelo?
+- a aplicação conhece a diferença entre indisponibilidade e resposta inválida?
 
-Uma prioridade alta pode reorganizar uma fila. A interface deve permitir revisão e não pode apresentar a classificação como fato absoluto.
+Abstração em excesso também tem custo. Ela deve proteger uma variação real, não apenas uma possibilidade imaginada.
 
-### Rascunho de resposta
+## Custo total
 
-O texto pode parecer pronto, embora contenha promessa indevida. Ele deve permanecer identificado como rascunho até aprovação humana.
+O preço de inferência ou o custo do hardware é apenas uma parte. Considere:
 
-### Mascaramento
+- desenvolvimento e manutenção;
+- criação e revisão de datasets;
+- avaliação contínua;
+- observabilidade;
+- armazenamento de entradas e resultados;
+- revisão humana;
+- incidentes e correções;
+- atualização de modelos;
+- adequação jurídica e de privacidade.
 
-A ausência de detecção não prova ausência de dado sensível. A interface não deve declarar que o texto está “completamente seguro”.
+Uma solução aparentemente barata pode transferir custo para revisão manual ou operação.
 
-### Informação ausente
+## Decisões reversíveis e irreversíveis
 
-Perguntas sugeridas precisam ser pertinentes e não podem solicitar segredos.
+Decisões reversíveis podem ser experimentadas com menor risco, como alterar um prompt ou comparar modelos em ambiente controlado.
+
+Decisões de difícil reversão incluem armazenar grandes volumes de dados pessoais, tornar um fornecedor parte do contrato público ou automatizar uma decisão crítica sem mecanismo de contestação.
+
+Quanto menos reversível a decisão, maior deve ser a evidência exigida.
+
+## Análise do projeto da disciplina
+
+Cada dupla deverá analisar sua feature do Encontro 12 respondendo:
+
+1. A tarefa realmente necessita de IA?
+2. Qual parte poderia ser determinística?
+3. Qual é o maior risco de uma resposta incorreta?
+4. Quais dados entram e quais saem?
+5. Onde a validação deve ocorrer?
+6. Quem confirma o resultado?
+7. O sistema ainda oferece valor se o modelo estiver indisponível?
+8. Qual dimensão é prioritária: qualidade, custo, latência ou privacidade?
+9. O que precisaria ser medido em produção?
+10. Qual decisão seria mais difícil de reverter?
+
+## Matriz de decisão
+
+A dupla deverá preencher uma matriz qualitativa:
+
+| Alternativa | Qualidade | Latência | Privacidade | Custo | Operação | Risco |
+|---|---|---|---|---|---|---|
+| regra determinística |  |  |  |  |  |  |
+| modelo local |  |  |  |  |  |  |
+| serviço externo |  |  |  |  |  |  |
+| solução híbrida |  |  |  |  |  |  |
+
+As classificações devem ser justificadas. Não existe obrigação de escolher IA como alternativa final.
 
 ## Atividade de análise
 
-Cada dupla deverá selecionar a feature recebida no Encontro 12 e produzir:
+Produza uma decisão arquitetural curta contendo:
 
-- descrição do usuário principal;
-- objetivo do usuário;
-- risco mais relevante;
-- ponto em que a revisão humana é necessária;
-- mensagem apresentada quando faltar informação;
-- mensagem apresentada quando a IA falhar;
-- forma de corrigir ou rejeitar o resultado;
-- indicação visual de que o conteúdo foi gerado;
-- um exemplo de padrão problemático a evitar.
+- contexto e problema;
+- alternativas consideradas;
+- critérios utilizados;
+- alternativa escolhida;
+- vantagens aceitas;
+- custos e riscos aceitos;
+- consequências esperadas;
+- condição que justificaria revisar a decisão.
 
-A atividade é de análise e documentação. Não haverá implementação.
-
-## Resultado esperado
-
-Documento curto de experiência do usuário contendo fluxo principal, situações de falha, decisões de supervisão e justificativa das mensagens apresentadas.
+A atividade é conceitual. Não haverá implementação ou alteração do projeto.
 
 ## Checklist
 
-- [ ] a função da IA está clara;
-- [ ] sugestão e decisão não são confundidas;
-- [ ] há possibilidade de revisão e correção;
-- [ ] falta de informação foi considerada;
-- [ ] falhas possuem mensagens úteis;
-- [ ] ações relevantes exigem confirmação;
-- [ ] dados sensíveis foram considerados;
-- [ ] limitações não foram escondidas;
-- [ ] acessibilidade e linguagem foram observadas.
+- [ ] alternativas sem IA foram consideradas;
+- [ ] critérios estão explícitos;
+- [ ] dados e fronteiras de confiança foram identificados;
+- [ ] autorização permanece fora do modelo;
+- [ ] custo total foi considerado;
+- [ ] supervisão humana foi posicionada;
+- [ ] indisponibilidade foi discutida;
+- [ ] decisão e trade-offs foram justificados;
+- [ ] condições de revisão foram registradas.
 
 ## Síntese
 
-Em produtos com IA, a interface também é uma camada de segurança. Ela molda expectativas, preserva controle e impede que uma saída provável seja confundida com uma decisão confirmada.
+Uma arquitetura com IA não é definida apenas pelo modelo escolhido. Ela resulta da distribuição de responsabilidades, das fronteiras de confiança e dos compromissos assumidos entre qualidade, custo, latência, privacidade e operação.

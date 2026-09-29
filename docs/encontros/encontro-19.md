@@ -39,4 +39,4 @@ arquitetura, evidências dos testes e registro das limitações ainda existentes
 
 ## Continuidade
 
-O encontro encerra a sequência técnica da Unidade 1 depois da apresentação das features e da prática integrada.
+O encontro encerra a sequência técnica da Unidade 1 depois das atividades com features e da prática integrada.
