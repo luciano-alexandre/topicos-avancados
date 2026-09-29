@@ -2,7 +2,7 @@
 
 ## Tema
 
-Análise de decisões, limites e trade-offs arquiteturais em aplicações que incorporam modelos de IA, sem atividade de implementação.
+Análise de decisões, limites e trade-offs arquiteturais em aplicações que incorporam modelos de IA.
 
 ## Objetivos
 
