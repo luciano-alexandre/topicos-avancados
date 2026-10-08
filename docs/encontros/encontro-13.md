@@ -15,6 +15,18 @@ Projeto conceitual de aplicações que combinam texto, imagem, áudio e document
 - Definir critérios de avaliação próprios para cada modalidade.
 - Propor uma evolução multimodal para o sistema de chamados.
 
+![Entradas multimodais transformadas em evidências](../imagens/encontro-13-fluxo-multimodal.svg)
+
+```mermaid
+flowchart LR
+    T[Texto<br/>descrição] --> E[Evidências]
+    I[Imagem<br/>estado visual] --> E
+    A[Áudio<br/>fala e sequência] --> E
+    D[Documento<br/>texto e layout] --> E
+    V[Vídeo<br/>imagem, áudio e tempo] --> E
+    E --> R[Resposta fundamentada]
+```
+
 ## Por que multimodalidade é relevante?
 
 Problemas reais raramente chegam apenas como texto estruturado. Em um sistema de atendimento, o usuário pode enviar:
@@ -48,17 +60,88 @@ OCR, transcrição e compreensão não são equivalentes. Extrair o texto “Err
 
 ## Fluxo multimodal
 
-Um fluxo conceitual pode conter:
-
-Entrada → validação do arquivo → extração de metadados → processamento específico → combinação de evidências → inferência → validação → resposta com referência à origem.
+```mermaid
+flowchart LR
+    A[Entrada] --> B[Validação]
+    B --> C[Processamento da modalidade]
+    C --> D[Extração de evidências]
+    D --> E[Combinação]
+    E --> F[Resposta com origem]
+```
 
 Cada seta representa uma fronteira de confiança. Um arquivo válido pode conter informação incorreta, instrução maliciosa ou dado sensível.
+
+## Compreender não é o mesmo que gerar
+
+| Operação | Entrada | Saída | Exemplo |
+|---|---|---|---|
+| compreensão visual | imagem + pergunta | texto | localizar uma mensagem de erro |
+| OCR | imagem ou página | texto extraído | copiar um protocolo |
+| geração de imagem | texto ou imagem | imagem | criar uma ilustração |
+| transcrição | áudio | texto | registrar uma fala |
+| síntese de voz | texto | áudio | ler uma resposta |
+| compreensão de vídeo | vídeo + pergunta | texto | localizar uma falha |
+| geração de vídeo | texto ou imagem | vídeo | produzir uma animação |
+
+Um modelo que aceita imagens não necessariamente gera imagens. Um modelo que transcreve áudio também não necessariamente interpreta toda a conversa.
+
+## Modelos reais por modalidade
+
+Os nomes são exemplos concretos, não recomendações automáticas. Identificadores, variantes, licenças e disponibilidade podem mudar.
+
+| Informação recebida | Modelos reais | Aplicações típicas |
+|---|---|---|
+| texto | `qwen3`, `llama3.1:8b`, `gemma3:1b` | classificação, extração, resumo e geração |
+| texto e imagem | `llama3.2-vision:11b`, `gemma3:4b`, `qwen3-vl` | telas, gráficos, OCR contextual e perguntas visuais |
+| áudio para texto | `openai/whisper-large-v3-turbo`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe` | transcrição e reconhecimento de fala |
+| áudio conversacional | `gemini-2.5-flash-native-audio`, `gpt-realtime` | conversação com entrada e saída de voz |
+| PDF e documento visual | `gemini-3.8-flash`, `granite3.2-vision`, Claude Opus 4.6 | páginas, tabelas, gráficos e layout |
+| vídeo | `gemini-2.5-flash`, `gemini-2.5-pro` | resumo, perguntas e localização de eventos |
+
+### Modelos que podem ser avaliados localmente
+
+- `llama3.2-vision:11b`: texto e imagem;
+- `gemma3:4b`, `gemma3:12b` e `gemma3:27b`: variantes com visão;
+- `qwen3-vl`: família voltada à compreensão visual;
+- `granite3.2-vision`: documentos, tabelas, gráficos e diagramas;
+- Whisper: transcrição executada normalmente como serviço especializado.
+
+O nome da família não garante capacidades idênticas. No Gemma 3 do Ollama, por exemplo, as variantes 270M e 1B são textuais, enquanto 4B, 12B e 27B aceitam imagens.
+
+### Exemplos por formato gerado
+
+| Saída | Modelos reais |
+|---|---|
+| texto | famílias Gemini, Claude, GPT, Qwen, Llama e Gemma |
+| imagem | `gpt-image-2`, modelos Gemini Image e Imagen |
+| fala | `gpt-4o-mini-tts`, `gemini-2.5-flash-preview-tts` |
+| vídeo | Sora 2 e Veo |
+
+Um sistema pode combinar modelos: Whisper transcreve o áudio e um modelo textual classifica a transcrição.
+
+### Fontes oficiais e catálogos
+
+- [Modelos Gemini](https://ai.google.dev/gemini-api/docs/models)
+- [Documentos no Gemini](https://ai.google.dev/gemini-api/docs/document-processing)
+- [Modelos da OpenAI](https://platform.openai.com/docs/models)
+- [Whisper Large V3 Turbo](https://huggingface.co/openai/whisper-large-v3-turbo)
+- [Llama 3.2 Vision no Ollama](https://ollama.com/library/llama3.2-vision)
+- [Gemma 3 no Ollama](https://ollama.com/library/gemma3)
+- [Qwen3-VL no Ollama](https://ollama.com/blog/qwen3-vl)
+- [Catálogo de visão do Ollama](https://ollama.com/library?q=vision)
 
 ## Duas arquiteturas principais
 
 ### Modelo multimodal nativo
 
 O mesmo modelo recebe texto e outros tipos de entrada.
+
+```mermaid
+flowchart LR
+    T[Texto do chamado] --> M[Modelo multimodal]
+    I[Captura de tela] --> M
+    M --> R[Categoria, explicação<br/>e evidência]
+```
 
 Vantagens possíveis:
 
@@ -79,11 +162,13 @@ Limitações possíveis:
 
 Cada modalidade é processada por uma ferramenta adequada antes da combinação.
 
-Exemplo conceitual:
-
-Áudio → transcrição → texto normalizado → classificador.
-
-Imagem → OCR → texto extraído → validador → classificador.
+```mermaid
+flowchart LR
+    A[Áudio] --> W[Whisper<br/>transcrição]
+    W --> N[Texto normalizado]
+    N --> C[Modelo textual<br/>classificação]
+    C --> J[Validação do JSON]
+```
 
 Vantagens possíveis:
 
@@ -101,22 +186,6 @@ Limitações possíveis:
 - formatos intermediários precisam de contratos.
 
 Nenhuma abordagem é sempre superior. A decisão depende da tarefa e da evidência que precisa ser preservada.
-
-## Texto
-
-Texto parece a modalidade mais simples, mas ainda contém:
-
-- idioma e variação regional;
-- ironia e ambiguidade;
-- formatação;
-- trechos citados;
-- instruções misturadas com dados;
-- dados pessoais;
-- conteúdo muito longo;
-- caracteres invisíveis;
-- código e logs.
-
-Em fluxos multimodais, o texto também pode ter sido produzido por OCR ou transcrição e carregar erros dessas etapas.
 
 ## Imagem
 
@@ -143,6 +212,16 @@ Em fluxos multimodais, o texto também pode ter sido produzido por OCR ou transc
 - incapacidade de confirmar autenticidade.
 
 Uma imagem de erro não prova quando o erro ocorreu nem se corresponde ao sistema informado.
+
+```mermaid
+flowchart LR
+    I[Captura] --> O[OCR]
+    I --> V[Compreensão visual]
+    O --> T[Texto: erro 403]
+    V --> C[Contexto: tela de login<br/>botão desabilitado]
+    T --> E[Evidência combinada]
+    C --> E
+```
 
 ### Perguntas arquiteturais
 
@@ -179,6 +258,16 @@ Uma imagem de erro não prova quando o erro ocorreu nem se corresponde ao sistem
 
 A aplicação não deve tomar decisões sensíveis com base em emoção inferida da voz sem justificativa, validação e análise ética específica.
 
+```mermaid
+flowchart LR
+    A[Áudio] --> T[Transcrição com timestamps]
+    A --> D[Diarização]
+    T --> R[Texto revisável]
+    D --> P[Participantes]
+    R --> C[Análise do chamado]
+    P --> C
+```
+
 ### Perguntas arquiteturais
 
 - é necessário armazenar o áudio depois da transcrição?
@@ -192,6 +281,18 @@ A aplicação não deve tomar decisões sensíveis com base em emoção inferida
 ## Documentos
 
 Documentos combinam texto, layout, imagens, tabelas, cabeçalhos, rodapés e páginas.
+
+```mermaid
+flowchart TB
+    P[PDF] --> N[Texto nativo]
+    P --> G[Páginas como imagem]
+    P --> L[Layout]
+    N --> R[Resposta com página de origem]
+    G --> O[OCR e visão]
+    L --> T[Tabelas e colunas]
+    O --> R
+    T --> R
+```
 
 ### Problemas frequentes
 
@@ -244,6 +345,16 @@ Modalidades podem:
 
 Exemplo: o texto afirma “erro 500”, enquanto a captura mostra “403”. A aplicação não deve escolher silenciosamente. O conflito precisa ser preservado ou encaminhado.
 
+```mermaid
+flowchart TD
+    T[Texto: erro 500] --> C{A captura confirma?}
+    I[Imagem: erro 403] --> C
+    C -->|Sim| U[Unificar evidências]
+    C -->|Não| X[Preservar o conflito]
+    X --> Q[Solicitar esclarecimento<br/>ou revisão]
+    U --> R[Responder indicando a origem]
+```
+
 ## Estratégias de combinação
 
 ### Texto como orientação
@@ -272,101 +383,15 @@ Benefício: relações entre elementos podem ser compreendidas.
 
 Risco: torna-se mais difícil localizar a origem exata de uma afirmação.
 
-## Contrato de entrada
+## Evidência, segurança e acesso
 
-Um contrato multimodal precisa esclarecer:
+Os encontros anteriores já trataram contratos, privacidade, custo e validação. Em uma entrada multimodal, aplique esses princípios observando três pontos específicos:
 
-- modalidades aceitas;
-- quantidade de arquivos;
-- tipos e extensões;
-- tamanho e duração;
-- relação entre texto e anexos;
-- finalidade do processamento;
-- dados proibidos;
-- retenção;
-- comportamento diante de arquivo ilegível;
-- possibilidade de processamento parcial.
+1. preserve a página, região, instante ou trecho que sustenta a resposta;
+2. trate texto encontrado em imagens, áudio e documentos como dado não confiável, não como instrução;
+3. ofereça alternativa textual e possibilidade de corrigir transcrições ou extrações.
 
-Extensão do arquivo não confirma seu conteúdo real. Nome, tipo declarado e conteúdo podem divergir.
-
-## Contrato de saída
-
-A resposta pode precisar incluir:
-
-- resultado principal;
-- modalidade utilizada;
-- referência à página, instante ou região;
-- informação extraída;
-- conflito detectado;
-- qualidade insuficiente;
-- dado ausente;
-- necessidade de revisão humana;
-- limitações da análise.
-
-Uma resposta multimodal sem proveniência dificulta correção e auditoria.
-
-## Privacidade
-
-Arquivos podem conter mais dados do que o usuário percebe:
-
-| Modalidade | Exemplos |
-|---|---|
-| imagem | rosto, endereço, tela ao fundo, localização em metadados |
-| áudio | voz, nomes, ambiente e conversas de terceiros |
-| documento | CPF, assinatura, matrícula, valores e histórico |
-| vídeo | pessoas, local, rotina e informações temporais |
-
-Pergunte sempre:
-
-- o dado é necessário?
-- pode ser removido antes da inferência?
-- quem terá acesso?
-- por quanto tempo será mantido?
-- o usuário entende a finalidade?
-- o fornecedor externo pode receber esse dado?
-
-## Segurança multimodal
-
-Instruções maliciosas não existem apenas em texto digitado. Elas podem aparecer:
-
-- escritas em uma imagem;
-- escondidas em documento;
-- pronunciadas em áudio;
-- inseridas em metadados;
-- misturadas a conteúdo recuperado.
-
-Todo conteúdo deve ser tratado como dado não confiável. Um anexo não adquire autoridade por ter sido enviado em outro formato.
-
-## Custo e latência
-
-O custo não depende apenas do número de palavras. Considere:
-
-- tamanho e resolução de imagens;
-- duração do áudio ou vídeo;
-- quantidade de páginas;
-- quantidade de anexos;
-- transformação e armazenamento;
-- reprocessamento;
-- transferência de dados;
-- revisão humana;
-- retenção dos artefatos.
-
-Uma experiência multimodal também precisa comunicar progresso e permitir cancelamento.
-
-## Acessibilidade
-
-Multimodalidade pode ampliar ou reduzir acesso.
-
-Boas perguntas:
-
-- existe alternativa textual?
-- o resultado visual possui descrição?
-- a transcrição pode ser corrigida?
-- o usuário surdo recebe informação equivalente?
-- o usuário cego consegue revisar o resultado?
-- cor é o único meio de comunicar estado?
-- a interface funciona sem áudio?
-- erros são anunciados por tecnologia assistiva?
+Uma resposta multimodal sem origem dificulta revisão. Um anexo também pode expor rostos, vozes, documentos e metadados que não são necessários para a tarefa.
 
 ## Avaliação por modalidade
 
