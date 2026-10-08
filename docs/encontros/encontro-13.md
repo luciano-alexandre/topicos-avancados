@@ -411,6 +411,3 @@ A proposta deve conter:
 9. falhas específicas da modalidade;
 10. situação de conflito entre modalidades;
 11. critérios de revisão humana;
-12. casos de avaliação;
-13. custo e latência esperados qualitativamente;
-14. alternativa acessível.
