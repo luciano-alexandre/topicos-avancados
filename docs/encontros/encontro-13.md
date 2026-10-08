@@ -383,36 +383,6 @@ Benefício: relações entre elementos podem ser compreendidas.
 
 Risco: torna-se mais difícil localizar a origem exata de uma afirmação.
 
-## Evidência, segurança e acesso
-
-Os encontros anteriores já trataram contratos, privacidade, custo e validação. Em uma entrada multimodal, aplique esses princípios observando três pontos específicos:
-
-1. preserve a página, região, instante ou trecho que sustenta a resposta;
-2. trate texto encontrado em imagens, áudio e documentos como dado não confiável, não como instrução;
-3. ofereça alternativa textual e possibilidade de corrigir transcrições ou extrações.
-
-Uma resposta multimodal sem origem dificulta revisão. Um anexo também pode expor rostos, vozes, documentos e metadados que não são necessários para a tarefa.
-
-## Avaliação por modalidade
-
-### Imagem
-
-Avalie extração de texto, identificação do elemento relevante, referência espacial, resolução baixa e presença de dados sensíveis.
-
-### Áudio
-
-Avalie transcrição, números, nomes, negações, ruído, participantes e timestamps.
-
-### Documento
-
-Avalie páginas, tabelas, ordem de leitura, citações, campos ausentes e documentos escaneados.
-
-### Combinação
-
-Avalie concordância, conflito, origem da evidência, modalidade ausente e anexo irrelevante.
-
-A métrica precisa corresponder à tarefa. Uma transcrição pode ter poucas palavras erradas e ainda inverter o significado ao perder “não”.
-
 ## Aplicação ao sistema de chamados
 
 Possíveis extensões conceituais:
