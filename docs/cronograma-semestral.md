@@ -18,7 +18,7 @@ conteúdos seguintes foram antecipados em um encontro.
 | [11](encontros/encontro-11.md) | U1 | Testes e redução de respostas não sustentadas |
 | [12](encontros/encontro-12.md) | U1 | Implementação de features independentes com IA |
 | [13](encontros/encontro-13.md) | U1 | Arquiteturas multimodais para aplicações com IA |
-| [14](encontros/encontro-14.md) | U1 | Guardrails, supervisão humana e tratamento de incerteza |
+| [14](encontros/encontro-14.md) | U1 | Backend multimodal com NestJS, Ollama e Docker |
 | [15](encontros/encontro-15.md) | U1 | Seleção de modelos para aplicações com IA |
 | [16](encontros/encontro-16.md) | U1 | Classificação, extração de entidades e persistência |
 | [17](encontros/encontro-17.md) | U1 | Tool calling: contratos, execução segura e permissões |
