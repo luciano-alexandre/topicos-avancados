@@ -36,8 +36,6 @@ flowchart LR
     O --> C[Comparação com baseline]
 ```
 
-### Legenda do fluxo
-
 | Componente | Resumo |
 |---|---|
 | dataset supervisionado | conjunto de exemplos contendo entradas e respostas esperadas para orientar a especialização |
