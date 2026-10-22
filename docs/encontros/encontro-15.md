@@ -73,10 +73,50 @@ flowchart TD
 - Docker e Docker Compose;
 - Ollama executado por Docker;
 - `llama3.2:latest` ou `llama3.2:3b` instalado;
-- GPU NVIDIA disponível para o Docker;
-- NVIDIA Container Toolkit;
+- GPU NVIDIA disponível para o Docker durante o treinamento;
+- NVIDIA Container Toolkit para expor essa GPU ao contêiner;
 - espaço para o download e para o modelo resultante;
 - conta no Hugging Face com acesso ao Llama 3.2.
+
+### Por que o tutorial pede uma GPU NVIDIA?
+
+A GPU é necessária somente para a etapa de treinamento adotada neste tutorial. Ela não é obrigatória para executar o Ollama ou fazer perguntas ao modelo.
+
+| Operação | GPU NVIDIA obrigatória? | Observação |
+|---|:---:|---|
+| executar o Llama 3.2 no Ollama | não | o Ollama pode utilizar CPU, embora a resposta possa ser mais lenta |
+| consumir o modelo pelo backend | não | o backend apenas chama a API do Ollama |
+| criar e testar prompts | não | é uma operação de inferência |
+| treinar com o script QLoRA deste material | sim | PyTorch, CUDA e bitsandbytes utilizam a GPU para os cálculos do treinamento |
+| importar o modelo treinado no Ollama | não | a importação apenas registra os pesos produzidos |
+
+Durante o treinamento, o modelo precisa calcular muitas operações e manter dados intermediários na memória. A GPU executa essas operações de forma paralela e sua memória, chamada de VRAM, armazena o modelo quantizado e os cálculos necessários.
+
+O Docker não cria nem simula uma GPU. A opção:
+
+```yaml
+gpus: all
+```
+
+apenas permite que o contêiner utilize uma GPU existente no computador. O **NVIDIA Container Toolkit** conecta o Docker ao driver NVIDIA instalado no sistema operacional.
+
+```mermaid
+flowchart LR
+    G[GPU NVIDIA física] --> D[Driver NVIDIA]
+    D --> K[NVIDIA Container Toolkit]
+    K --> C[Contêiner de treinamento]
+    C --> P[PyTorch + CUDA + bitsandbytes]
+```
+
+### E se o computador não tiver uma GPU NVIDIA?
+
+Existem três possibilidades:
+
+1. continuar usando o Llama 3.2 no Ollama sem realizar o treinamento;
+2. executar o contêiner de treinamento em outro computador ou serviço que possua GPU e depois importar o resultado no Ollama local;
+3. adaptar todo o ambiente para outra tecnologia, como ROCm em GPUs AMD ou MLX em computadores Apple, o que exige imagens, bibliotecas e código diferentes.
+
+Treinamento em CPU é tecnicamente possível em alguns cenários, especialmente com modelos menores, mas pode consumir muita memória e demorar excessivamente. Por isso, ele não é o caminho adotado neste guia.
 
 O tutorial utiliza:
 
@@ -84,7 +124,7 @@ O tutorial utiliza:
 meta-llama/Llama-3.2-3B-Instruct
 ```
 
-Se o computador não possuir GPU compatível, o treinamento não deve ser executado nesse ambiente. O modelo original continuará funcionando no Ollama, mas isso não transforma a CPU em um ambiente adequado de treinamento.
+Se o computador não possuir GPU compatível, o restante do projeto e o modelo original continuam funcionando. O treinamento deverá ser realizado em um ambiente com GPU e o adaptador resultante poderá ser trazido de volta. A mesclagem pode utilizar CPU, desde que o computador possua RAM suficiente.
 
 ## Estrutura dos arquivos
 
@@ -250,7 +290,7 @@ volumes:
   huggingface-cache:
 ```
 
-Preserve as demais configurações já existentes no serviço `ollama`.
+Preserve as demais configurações já existentes no serviço `ollama`. A opção `gpus: all` não instala drivers nem fornece uma GPU remota: ela apenas disponibiliza ao contêiner a GPU NVIDIA já presente no computador.
 
 Construa o contêiner e confirme a GPU:
 
