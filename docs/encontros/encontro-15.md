@@ -18,7 +18,7 @@ Ajuste do Llama 3.2 com exemplos de chamados, execução do treinamento em Docke
 O modelo original continuará disponível:
 
 ```text
-llama3.2:latest
+llama3.2:1b
 ```
 
 Um segundo modelo será criado:
@@ -50,7 +50,7 @@ flowchart LR
 | modelo-base | Llama 3.2 original usado como ponto de partida |
 | dataset | arquivo com exemplos de chamados e respostas esperadas |
 | ajuste fino | continuação do treinamento para ensinar uma tarefa específica |
-| QLoRA | técnica que reduz a memória necessária e treina apenas uma pequena parte adicional |
+| LoRA | técnica que mantém o modelo-base congelado e treina apenas um pequeno adaptador |
 | adaptador | arquivo pequeno que guarda o que foi aprendido no ajuste |
 | modelo mesclado | modelo-base combinado com o adaptador, pronto para ser importado |
 
@@ -72,59 +72,47 @@ flowchart TD
 
 - Docker e Docker Compose;
 - Ollama executado por Docker;
-- `llama3.2:latest` ou `llama3.2:3b` instalado;
-- GPU NVIDIA disponível para o Docker durante o treinamento;
-- NVIDIA Container Toolkit para expor essa GPU ao contêiner;
+- `llama3.2:1b` instalado;
+- processador de 64 bits com múltiplos núcleos;
+- pelo menos 16 GB de RAM recomendados;
 - espaço para o download e para o modelo resultante;
 - conta no Hugging Face com acesso ao Llama 3.2.
 
-### Por que o tutorial pede uma GPU NVIDIA?
+### Alternativa adotada: treinamento em CPU
 
-A GPU é necessária somente para a etapa de treinamento adotada neste tutorial. Ela não é obrigatória para executar o Ollama ou fazer perguntas ao modelo.
+Este tutorial não depende de GPU NVIDIA. O treinamento será executado pelo processador usando LoRA e a variante 1B do Llama 3.2.
 
-| Operação | GPU NVIDIA obrigatória? | Observação |
-|---|:---:|---|
-| executar o Llama 3.2 no Ollama | não | o Ollama pode utilizar CPU, embora a resposta possa ser mais lenta |
-| consumir o modelo pelo backend | não | o backend apenas chama a API do Ollama |
-| criar e testar prompts | não | é uma operação de inferência |
-| treinar com o script QLoRA deste material | sim | PyTorch, CUDA e bitsandbytes utilizam a GPU para os cálculos do treinamento |
-| importar o modelo treinado no Ollama | não | a importação apenas registra os pesos produzidos |
-
-Durante o treinamento, o modelo precisa calcular muitas operações e manter dados intermediários na memória. A GPU executa essas operações de forma paralela e sua memória, chamada de VRAM, armazena o modelo quantizado e os cálculos necessários.
-
-O Docker não cria nem simula uma GPU. A opção:
-
-```yaml
-gpus: all
-```
-
-apenas permite que o contêiner utilize uma GPU existente no computador. O **NVIDIA Container Toolkit** conecta o Docker ao driver NVIDIA instalado no sistema operacional.
+| Escolha | Consequência |
+|---|---|
+| Llama 3.2 1B | utiliza menos memória que a variante 3B |
+| LoRA | treina somente um adaptador pequeno |
+| CPU | funciona sem CUDA e sem NVIDIA Container Toolkit |
+| sequências curtas | reduzem o consumo de RAM |
+| dataset pequeno | torna o experimento didático, mas não produz um modelo de produção |
 
 ```mermaid
 flowchart LR
-    G[GPU NVIDIA física] --> D[Driver NVIDIA]
-    D --> K[NVIDIA Container Toolkit]
-    K --> C[Contêiner de treinamento]
-    C --> P[PyTorch + CUDA + bitsandbytes]
+    C[CPU do computador] --> D[Docker]
+    D --> P[PyTorch para CPU]
+    P --> L[Llama 3.2 1B + LoRA]
+    L --> A[Adaptador treinado]
 ```
 
-### E se o computador não tiver uma GPU NVIDIA?
-
-Existem três possibilidades:
-
-1. continuar usando o Llama 3.2 no Ollama sem realizar o treinamento;
-2. executar o contêiner de treinamento em outro computador ou serviço que possua GPU e depois importar o resultado no Ollama local;
-3. adaptar todo o ambiente para outra tecnologia, como ROCm em GPUs AMD ou MLX em computadores Apple, o que exige imagens, bibliotecas e código diferentes.
-
-Treinamento em CPU é tecnicamente possível em alguns cenários, especialmente com modelos menores, mas pode consumir muita memória e demorar excessivamente. Por isso, ele não é o caminho adotado neste guia.
+Treinar em CPU é mais lento que treinar em GPU. O resultado depende do processador, da RAM, do tamanho do dataset e do tamanho das sequências. O objetivo é demonstrar o fluxo completo com poucos exemplos, não realizar treinamento em larga escala.
 
 O tutorial utiliza:
 
 ```text
-meta-llama/Llama-3.2-3B-Instruct
+meta-llama/Llama-3.2-1B-Instruct
 ```
 
-Se o computador não possuir GPU compatível, o restante do projeto e o modelo original continuam funcionando. O treinamento deverá ser realizado em um ambiente com GPU e o adaptador resultante poderá ser trazido de volta. A mesclagem pode utilizar CPU, desde que o computador possua RAM suficiente.
+No Ollama, utilize a variante correspondente:
+
+```bash
+docker compose exec ollama ollama pull llama3.2:1b
+```
+
+O checkpoint 1B não deve ser treinado e comparado com a variante 3B. Modelo-base, adaptador e baseline precisam pertencer à mesma variante.
 
 ## Estrutura dos arquivos
 
@@ -172,7 +160,7 @@ Content-Type: application/json
 
 ```json
 {
-  "model": "llama3.2:latest",
+  "model": "llama3.2:1b",
   "messages": [
     {
       "role": "user",
@@ -194,7 +182,7 @@ Salve a resposta. Repita com exemplos de todas as categorias. Esses casos serão
 O modelo para treinamento será baixado do Hugging Face:
 
 1. entre em sua conta;
-2. abra a página `meta-llama/Llama-3.2-3B-Instruct`;
+2. abra a página `meta-llama/Llama-3.2-1B-Instruct`;
 3. aceite os termos;
 4. crie um token pessoal somente para leitura;
 5. salve-o em `.env`.
@@ -242,7 +230,6 @@ datasets>=3,<5
 peft>=0.13,<1
 trl>=0.15,<1
 accelerate>=1,<2
-bitsandbytes>=0.44,<1
 safetensors>=0.4,<1
 sentencepiece>=0.2,<1
 ```
@@ -250,11 +237,12 @@ sentencepiece>=0.2,<1
 Crie `treinamento/Dockerfile`:
 
 ```dockerfile
-FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+FROM python:3.11-slim
 
 WORKDIR /workspace
 
 COPY requirements.txt .
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
@@ -278,26 +266,27 @@ services:
       context: ./treinamento
     environment:
       HF_TOKEN: ${HF_TOKEN}
-      BASE_MODEL: meta-llama/Llama-3.2-3B-Instruct
+      BASE_MODEL: meta-llama/Llama-3.2-1B-Instruct
     volumes:
       - ./treinamento:/workspace
       - huggingface-cache:/root/.cache/huggingface
-    gpus: all
-    ipc: host
 
 volumes:
   ollama-data:
   huggingface-cache:
 ```
 
-Preserve as demais configurações já existentes no serviço `ollama`. A opção `gpus: all` não instala drivers nem fornece uma GPU remota: ela apenas disponibiliza ao contêiner a GPU NVIDIA já presente no computador.
+Preserve as demais configurações já existentes no serviço `ollama`. O serviço `trainer` não declara GPU e utiliza a imagem do PyTorch compilada para CPU.
 
-Construa o contêiner e confirme a GPU:
+Construa o contêiner e confirme que o PyTorch utilizará CPU:
 
 ```bash
 docker compose --profile training build trainer
-docker compose --profile training run --rm trainer nvidia-smi
+docker compose --profile training run --rm trainer \
+  python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
 ```
+
+O segundo valor deve ser `False`. Isso confirma que o experimento não depende de CUDA.
 
 ## Passo 5 — criar o script de treinamento
 
@@ -307,25 +296,15 @@ Crie `treinamento/train.py`:
 import os
 import torch
 from datasets import load_dataset
-from peft import LoraConfig, prepare_model_for_kbit_training
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig,
-)
+from peft import LoraConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import SFTConfig, SFTTrainer
 
 MODEL_ID = os.getenv(
     "BASE_MODEL",
-    "meta-llama/Llama-3.2-3B-Instruct",
+    "meta-llama/Llama-3.2-1B-Instruct",
 )
 TOKEN = os.environ["HF_TOKEN"]
-
-if not torch.cuda.is_available():
-    raise RuntimeError("GPU CUDA não encontrada")
-
-use_bf16 = torch.cuda.is_bf16_supported()
-compute_type = torch.bfloat16 if use_bf16 else torch.float16
 
 dataset = load_dataset(
     "json",
@@ -342,16 +321,11 @@ if tokenizer.pad_token is None:
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
     token=TOKEN,
-    device_map="auto",
-    quantization_config=BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=compute_type,
-    ),
+    torch_dtype=torch.float32,
+    device_map="cpu",
+    low_cpu_mem_usage=True,
 )
 model.config.use_cache = False
-model = prepare_model_for_kbit_training(model)
 
 lora = LoraConfig(
     r=16,
@@ -359,7 +333,7 @@ lora = LoraConfig(
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+    target_modules=["q_proj", "v_proj"],
 )
 
 config = SFTConfig(
@@ -372,9 +346,11 @@ config = SFTConfig(
     eval_strategy="epoch",
     save_strategy="epoch",
     logging_steps=1,
-    max_length=512,
-    bf16=use_bf16,
-    fp16=not use_bf16,
+    max_length=256,
+    use_cpu=True,
+    bf16=False,
+    fp16=False,
+    dataloader_pin_memory=False,
     report_to="none",
     seed=42,
 )
@@ -396,7 +372,7 @@ tokenizer.save_pretrained("/workspace/output/adapter")
 O script:
 
 1. abre o dataset;
-2. carrega o Llama 3.2 com menor consumo de memória;
+2. carrega o Llama 3.2 1B na CPU;
 3. treina o adaptador;
 4. salva o resultado em `output/adapter`.
 
@@ -434,14 +410,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODEL_ID = os.getenv(
     "BASE_MODEL",
-    "meta-llama/Llama-3.2-3B-Instruct",
+    "meta-llama/Llama-3.2-1B-Instruct",
 )
 TOKEN = os.environ["HF_TOKEN"]
 
 base = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
     token=TOKEN,
-    torch_dtype=torch.float16,
+    torch_dtype=torch.float32,
     device_map="cpu",
     low_cpu_mem_usage=True,
 )
@@ -553,17 +529,18 @@ O código NestJS continua igual porque o nome do modelo é fornecido pelo ambien
 | Problema | Verificação |
 |---|---|
 | acesso negado ao checkpoint | termos aceitos e token de leitura válido |
-| GPU não encontrada | driver e NVIDIA Container Toolkit |
-| falta de memória na GPU | reduzir `max_length` ou usar consistentemente a variante 1B |
+| treinamento muito lento | reduzir exemplos ou `max_length` sem reutilizar casos de avaliação |
+| falta de RAM | encerrar outros processos, reduzir `max_length` ou aumentar a memória do Docker |
 | arquivo de adaptador não criado | logs do treinamento e permissões de `output/` |
 | mesclagem encerra por memória | RAM disponível no host |
 | Ollama não encontra os pesos | volumes, caminho do `FROM` e conteúdo de `merged/` |
 | modelo ajustado piorou | dataset pequeno, inconsistente ou com categorias desbalanceadas |
 
-Para conferir GPU:
+Para confirmar que o PyTorch está em CPU:
 
 ```bash
-docker compose --profile training run --rm trainer nvidia-smi
+docker compose --profile training run --rm trainer \
+  python -c "import torch; print(torch.cuda.is_available())"
 ```
 
 Para conferir os arquivos vistos pelo Ollama:
@@ -590,7 +567,7 @@ A entrega será realizada pelo repositório GitHub enviado no Classroom. Não en
 - [ ] modelo original foi testado;
 - [ ] exemplos de comparação não aparecem no treino;
 - [ ] token está fora do Git;
-- [ ] GPU está disponível no contêiner;
+- [ ] o contêiner confirma `torch.cuda.is_available() == False`;
 - [ ] adaptador foi criado;
 - [ ] modelo completo foi gerado;
 - [ ] novo modelo foi importado no Ollama;
@@ -603,7 +580,8 @@ O experimento parte do Llama 3.2, apresenta exemplos da tarefa, treina um pequen
 
 ## Fontes oficiais
 
-- [Llama 3.2 da Meta](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct)
+- [Llama 3.2 1B da Meta](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct)
+- [Treinamento em CPU com Transformers](https://huggingface.co/docs/transformers/cpu)
 - [Treinamento com TRL](https://huggingface.co/docs/trl/sft_trainer)
 - [PEFT e LoRA](https://huggingface.co/docs/peft/quicktour)
 - [Importação no Ollama](https://docs.ollama.com/import)
