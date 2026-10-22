@@ -80,15 +80,6 @@ flowchart TD
 
 ### Treinamento em CPU
 
-Este tutorial não depende de GPU NVIDIA. O treinamento será executado pelo processador usando LoRA e a variante 1B do Llama 3.2.
-
-| Escolha | Consequência |
-|---|---|
-| Llama 3.2 1B | utiliza menos memória que a variante 3B |
-| LoRA | treina somente um adaptador pequeno |
-| CPU | funciona sem CUDA e sem NVIDIA Container Toolkit |
-| sequências curtas | reduzem o consumo de RAM |
-| dataset pequeno | torna o experimento didático, mas não produz um modelo de produção |
 
 ```mermaid
 flowchart LR
