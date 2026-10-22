@@ -36,6 +36,21 @@ flowchart LR
     O --> C[Comparação com baseline]
 ```
 
+### Legenda do fluxo
+
+| Componente | Resumo |
+|---|---|
+| dataset supervisionado | conjunto de exemplos contendo entradas e respostas esperadas para orientar a especialização |
+| checkpoint oficial Llama 3.2 | pesos originais do modelo-base em formato adequado para treinamento |
+| treinamento QLoRA em Docker | processo que mantém o modelo-base quantizado e atualiza somente pequenos parâmetros adicionais dentro do contêiner |
+| adaptador LoRA | arquivo compacto com as alterações aprendidas durante o ajuste fino |
+| mesclagem com o modelo-base | incorporação das alterações do adaptador aos pesos originais para formar um modelo completo |
+| pesos Safetensors | arquivos resultantes em um formato seguro e suportado para armazenamento e importação |
+| importação no Ollama | registro dos pesos mesclados como um novo modelo disponível para inferência local |
+| comparação com baseline | avaliação do modelo ajustado contra o modelo original usando os mesmos exemplos e configurações |
+
+O dataset e o checkpoint entram no treinamento, mas somente o adaptador é alterado nessa etapa. Depois da mesclagem, o Ollama recebe um modelo completo e independente do ambiente usado para treinar.
+
 ## O que significa treinar um modelo?
 
 Durante o treinamento, o modelo recebe sequências de tokens e tenta prever os tokens esperados. A diferença entre previsão e resposta correta é representada por uma função de perda. O otimizador utiliza essa perda para atualizar parâmetros.
