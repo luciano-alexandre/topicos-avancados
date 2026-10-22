@@ -15,6 +15,229 @@ Fundamentos de treinamento de modelos de linguagem e tutorial de ajuste fino sup
 - importar o modelo resultante no Ollama;
 - comparar baseline e modelo ajustado com critérios observáveis.
 
+## Conceitos básicos antes do treinamento
+
+Antes de acompanhar o fluxo, é necessário diferenciar os elementos utilizados no treinamento. Eles representam coisas diferentes, embora muitas vezes sejam chamados informalmente apenas de “modelo”.
+
+### Modelo de linguagem
+
+É uma arquitetura computacional treinada para estimar quais tokens são mais prováveis em determinado contexto. Quando recebe um prompt, o modelo utiliza os padrões aprendidos para gerar uma continuação.
+
+O nome **Llama 3.2** identifica uma família. Dentro dela existem variantes com quantidades diferentes de parâmetros e finalidades diferentes, como:
+
+- `Llama-3.2-1B`;
+- `Llama-3.2-1B-Instruct`;
+- `Llama-3.2-3B`;
+- `Llama-3.2-3B-Instruct`.
+
+A variante **Instruct** já passou por uma etapa de especialização para seguir instruções e conversar. Neste encontro será usado o `Llama-3.2-3B-Instruct`.
+
+### Parâmetros e pesos
+
+Parâmetros são os valores numéricos ajustáveis do modelo. Durante o treinamento, o algoritmo calcula quais alterações nesses valores reduzem o erro das previsões.
+
+O termo **pesos** é frequentemente utilizado como sinônimo prático de parâmetros. Eles representam o conhecimento estatístico adquirido pelo modelo, não uma coleção de textos armazenados literalmente.
+
+```mermaid
+flowchart LR
+    P[Prompt tokenizado] --> M[Arquitetura do modelo]
+    W[Pesos numéricos] --> M
+    M --> R[Probabilidades dos próximos tokens]
+    R --> S[Resposta gerada]
+```
+
+### Modelo-base e checkpoint
+
+O **modelo-base** é o modelo que servirá como ponto de partida para uma nova especialização.
+
+Um **checkpoint** é um conjunto de arquivos que registra o estado dos pesos e das configurações do modelo em determinado momento. Ele permite carregar o modelo para continuar um treinamento, realizar ajuste fino ou executar inferência.
+
+Neste tutorial:
+
+| Elemento | Identificador |
+|---|---|
+| modelo-base para treinamento | `meta-llama/Llama-3.2-3B-Instruct` |
+| baseline executado no Ollama | `llama3.2:latest` ou `llama3.2:3b` |
+| modelo produzido | `llama3.2-suporte:latest` |
+
+O checkpoint usado no treinamento e a variante executada como baseline devem corresponder ao mesmo tamanho e à mesma família.
+
+### Dataset supervisionado
+
+É o conjunto de exemplos usados para ensinar o comportamento desejado. Cada exemplo apresenta uma entrada e a resposta esperada.
+
+```text
+Entrada: Minha conta foi bloqueada.
+Resposta esperada: CATEGORIA: ACESSO
+```
+
+O modelo não deve apenas memorizar esses exemplos. O objetivo é aprender um padrão que também funcione em entradas novas.
+
+O dataset normalmente é separado em:
+
+| Parte | Finalidade |
+|---|---|
+| treino | atualizar os parâmetros ou adaptadores |
+| validação | acompanhar o comportamento durante o treinamento |
+| avaliação | comparar o resultado final com exemplos não vistos |
+
+Usar o mesmo exemplo nas três partes cria **vazamento de dados** e produz uma avaliação enganosa.
+
+### Tokenização
+
+Antes de chegar ao modelo, o texto é dividido em tokens e convertido em identificadores numéricos. Entrada e resposta esperada precisam caber no limite configurado para o treinamento.
+
+Tokenização não realiza o aprendizado. Ela apenas transforma o texto no formato consumido pelo modelo.
+
+### Época, lote e passo de atualização
+
+| Conceito | Significado |
+|---|---|
+| época | uma passagem completa pelos exemplos de treino |
+| lote ou batch | quantidade de exemplos processados em conjunto |
+| passo | uma etapa do processo de treinamento |
+| acumulação de gradientes | soma gradientes de vários lotes antes de atualizar parâmetros |
+
+Mais épocas aumentam a exposição aos mesmos dados, mas também podem causar memorização e piorar a generalização.
+
+### Função de perda, gradientes e otimizador
+
+A **função de perda**, também chamada de `loss`, mede o erro entre a previsão do modelo e a sequência esperada. Um valor menor indica melhor ajuste aos exemplos medidos, mas não garante utilidade em situações novas.
+
+Os **gradientes** indicam como os valores treináveis devem mudar para reduzir a perda. O **otimizador** aplica essas mudanças.
+
+```mermaid
+flowchart LR
+    E[Exemplo] --> P[Previsão]
+    A[Resposta esperada] --> L[Perda]
+    P --> L
+    L --> G[Gradientes]
+    G --> O[Otimizador]
+    O --> U[Atualização dos valores treináveis]
+```
+
+### Taxa de aprendizado
+
+A taxa de aprendizado, ou `learning rate`, controla o tamanho das alterações realizadas pelo otimizador.
+
+- valor muito alto pode tornar o treinamento instável;
+- valor muito baixo pode produzir alterações insuficientes;
+- o valor adequado depende da técnica, do modelo e do dataset.
+
+### Quantização
+
+Quantização representa pesos usando menos bits. Isso reduz memória e pode acelerar a execução, embora possa introduzir perda de precisão.
+
+Exemplos simplificados:
+
+| Representação | Característica |
+|---|---|
+| FP32 | maior precisão e maior consumo |
+| FP16 ou BF16 | precisão reduzida, comum em treinamento |
+| 8 bits | menor uso de memória |
+| 4 bits | redução mais agressiva, usada no QLoRA |
+
+O modelo armazenado pelo Ollama costuma ser quantizado para inferência. Esse artefato não é equivalente ao checkpoint de treinamento disponibilizado pela Meta.
+
+### Ajuste fino
+
+O **ajuste fino**, ou `fine-tuning`, continua o treinamento de um modelo existente com um dataset direcionado. Ele pode especializar formato, vocabulário ou comportamento.
+
+Existem duas abordagens gerais:
+
+- **ajuste completo:** atualiza todos ou grande parte dos pesos;
+- **ajuste eficiente:** mantém os pesos originais congelados e treina poucos parâmetros adicionais.
+
+Este encontro utiliza a segunda abordagem.
+
+### LoRA
+
+**LoRA**, abreviação de *Low-Rank Adaptation*, adiciona pequenas matrizes treináveis a determinadas camadas. Os pesos originais permanecem congelados.
+
+O resultado é um **adaptador LoRA**, muito menor que o modelo-base. Ele contém somente as alterações aprendidas e depende de uma base compatível.
+
+```mermaid
+flowchart LR
+    X[Entrada] --> B[Pesos base<br/>congelados]
+    X --> A[Adaptador LoRA<br/>treinável]
+    B --> S[Soma das contribuições]
+    A --> S
+    S --> R[Saída]
+```
+
+### QLoRA
+
+**QLoRA** combina LoRA com o carregamento quantizado do modelo-base, normalmente em 4 bits. Assim:
+
+- o modelo-base ocupa menos memória;
+- os pesos originais continuam congelados;
+- o adaptador LoRA é treinado;
+- os cálculos importantes utilizam uma precisão apropriada.
+
+LoRA descreve o uso de adaptadores. QLoRA descreve o treinamento desses adaptadores sobre uma base carregada de forma quantizada.
+
+### Adaptador e mesclagem
+
+O **adaptador** não é, isoladamente, uma cópia completa do Llama 3.2. Para produzir um modelo completo, o tutorial realizará a **mesclagem**:
+
+```text
+pesos do modelo-base + alterações do adaptador = pesos mesclados
+```
+
+Depois da mesclagem, o resultado pode ser salvo e importado independentemente do ambiente usado no treinamento.
+
+### Safetensors
+
+**Safetensors** é um formato para armazenar tensores, como os pesos do modelo. Ele foi projetado para carregamento seguro e eficiente e não executa código arbitrário durante a leitura.
+
+No tutorial serão produzidos dois tipos de arquivo:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `adapter_model.safetensors` | somente os parâmetros aprendidos pelo LoRA |
+| arquivos `.safetensors` do diretório `merged` | modelo completo depois da mesclagem |
+
+O formato não treina, quantiza ou melhora o modelo; ele apenas armazena os tensores resultantes.
+
+### Baseline
+
+O **baseline** é a referência usada na comparação. Aqui será o Llama 3.2 original, antes do ajuste fino.
+
+Sem baseline, não é possível afirmar se o treinamento:
+
+- melhorou a classificação;
+- apenas mudou o formato;
+- não produziu diferença relevante;
+- causou regressões.
+
+### Inferência
+
+Inferência é o uso do modelo já treinado para gerar respostas. Durante uma chamada comum ao Ollama, os pesos não são atualizados.
+
+```mermaid
+flowchart TD
+    A[O comando atualiza pesos?] -->|Sim| T[Treinamento ou ajuste fino]
+    A -->|Não| I[Inferência]
+    I --> P[Prompt]
+    P --> R[Resposta]
+```
+
+### Mapa dos conceitos
+
+```mermaid
+flowchart LR
+    D[Dataset] --> Q[QLoRA]
+    C[Checkpoint do modelo-base] --> Q
+    Q --> A[Adaptador LoRA]
+    A --> M[Mesclagem]
+    C --> M
+    M --> S[Modelo completo<br/>em Safetensors]
+    S --> O[Ollama]
+    O --> I[Inferência]
+    B[Baseline] --> V[Comparação]
+    I --> V
+```
+
 ## Resultado esperado
 
 O fluxo produzirá um novo modelo local:
