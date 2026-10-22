@@ -78,7 +78,7 @@ flowchart TD
 - espaço para o download e para o modelo resultante;
 - conta no Hugging Face com acesso ao Llama 3.2.
 
-### Alternativa adotada: treinamento em CPU
+### Treinamento em CPU
 
 Este tutorial não depende de GPU NVIDIA. O treinamento será executado pelo processador usando LoRA e a variante 1B do Llama 3.2.
 
@@ -524,59 +524,6 @@ docker compose up -d --force-recreate backend
 
 O código NestJS continua igual porque o nome do modelo é fornecido pelo ambiente.
 
-## Problemas comuns
-
-| Problema | Verificação |
-|---|---|
-| acesso negado ao checkpoint | termos aceitos e token de leitura válido |
-| treinamento muito lento | reduzir exemplos ou `max_length` sem reutilizar casos de avaliação |
-| falta de RAM | encerrar outros processos, reduzir `max_length` ou aumentar a memória do Docker |
-| arquivo de adaptador não criado | logs do treinamento e permissões de `output/` |
-| mesclagem encerra por memória | RAM disponível no host |
-| Ollama não encontra os pesos | volumes, caminho do `FROM` e conteúdo de `merged/` |
-| modelo ajustado piorou | dataset pequeno, inconsistente ou com categorias desbalanceadas |
-
-Para confirmar que o PyTorch está em CPU:
-
-```bash
-docker compose --profile training run --rm trainer \
-  python -c "import torch; print(torch.cuda.is_available())"
-```
-
-Para conferir os arquivos vistos pelo Ollama:
-
-```bash
-docker compose exec ollama ls /models/llama32-suporte
-```
-
-## Atividade prática individual
-
-Realize o fluxo e entregue:
-
-1. dataset de treino e validação sem dados pessoais;
-2. configurações do contêiner;
-3. registro dos comandos utilizados;
-4. tabela comparando os dois modelos;
-5. análise de um acerto e de um erro;
-6. decisão: manter, revisar ou descartar o modelo ajustado.
-
-A entrega será realizada pelo repositório GitHub enviado no Classroom. Não envie `.env`, token, cache, adaptadores ou pesos.
-
-## Checklist
-
-- [ ] modelo original foi testado;
-- [ ] exemplos de comparação não aparecem no treino;
-- [ ] token está fora do Git;
-- [ ] o contêiner confirma `torch.cuda.is_available() == False`;
-- [ ] adaptador foi criado;
-- [ ] modelo completo foi gerado;
-- [ ] novo modelo foi importado no Ollama;
-- [ ] modelos foram comparados com as mesmas configurações;
-- [ ] erros e limitações foram registrados.
-
-## Síntese
-
-O experimento parte do Llama 3.2, apresenta exemplos da tarefa, treina um pequeno adaptador, gera um modelo completo e o importa no Ollama. O resultado só deve ser considerado melhor quando superar o modelo original em exemplos que não participaram do treinamento.
 
 ## Fontes oficiais
 
