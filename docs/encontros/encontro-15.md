@@ -1,4 +1,4 @@
-# Encontro 15 — Treinamento prático do Llama 3.2
+# Encontro 15 — Treinamento do Llama 3.2
 
 ## Tema
 
