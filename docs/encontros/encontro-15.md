@@ -15,7 +15,7 @@ Fundamentos de treinamento de modelos de linguagem e tutorial de ajuste fino sup
 - importar o modelo resultante no Ollama;
 - comparar baseline e modelo ajustado com critérios observáveis.
 
-## Conceitos básicos antes do treinamento
+## Conceitos básicos
 
 Antes de acompanhar o fluxo, é necessário diferenciar os elementos utilizados no treinamento. Eles representam coisas diferentes, embora muitas vezes sejam chamados informalmente apenas de “modelo”.
 
