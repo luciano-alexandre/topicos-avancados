@@ -43,9 +43,7 @@ flowchart LR
     O --> C[Comparação com o original]
 ```
 
-## Conceitos necessários
-
-Não é necessário dominar os detalhes matemáticos para acompanhar o experimento. Estes são os termos utilizados:
+## Conceitos 
 
 | Termo | Significado neste tutorial |
 |---|---|
